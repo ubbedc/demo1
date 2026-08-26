@@ -1,30 +1,25 @@
-# Multi-stage production build for ApexTrader Platform
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm ci
+RUN apk add --no-cache python3 make g++
 
-# Copy source code and build React frontend & compile TypeScript
+COPY package*.json ./
+RUN npm install
+
 COPY . .
 RUN npm run build
 
-# Production Runner Stage
 FROM node:20-alpine AS runner
 
 WORKDIR /app
+RUN apk add --no-cache python3 make g++
+
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=10000
 
-# Copy build artifacts and dependencies
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server ./server
-COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app ./
 
-EXPOSE 3001
+EXPOSE 10000
 
 CMD ["npm", "start"]

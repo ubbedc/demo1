@@ -60,7 +60,7 @@ app.use('/api/v1/client', clientRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 // Serve compiled React Frontend (Single-Port Production Deployment)
-const distPath = path.resolve(__dirname, '../../dist');
+const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
 app.get('*', (req: Request, res: Response) => {

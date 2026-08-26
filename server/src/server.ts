@@ -10,7 +10,7 @@ seedDatabase();
 marketService.startTickLoop(1200);
 
 // 3. Start HTTP Server
-const server = app.listen(CONFIG.PORT, () => {
+const server = app.listen(CONFIG.PORT, '0.0.0.0', () => {
   console.log(`
   =======================================================
   🚀 APEXTRADER PLATFORM — MODULAR MONOLITH SERVER

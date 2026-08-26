@@ -1,0 +1,13 @@
+services:
+  apextrader:
+    build: .
+    container_name: apextrader-platform
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=apextrader_super_secure_production_secret_key_2026
+    volumes:
+      - ./server/trading.db:/app/server/trading.db

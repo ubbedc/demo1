@@ -7,7 +7,7 @@ export const LandingFaq: React.FC = () => {
   const faqs = [
     {
       q: 'Come funziona la gestione del conto e l\'allocazione del capitale?',
-      a: 'Ogni account viene inizializzato con un conto segregato protetto a $0.00. Il capitale operativo viene successivamente allocato e gestito direttamente dal Risk Desk attraverso la console CRM proprietaria, garantendo il pieno controllo del rischio e l\'assoluta trasparenza delle operazioni.',
+      a: 'Ogni account viene inizializzato con un conto segregato protetto a $0.00. Il capitale operativo viene successivamente allocato e gestito direttamente dal Risk Desk centrale, garantendo il pieno controllo del rischio e l\'assoluta trasparenza delle operazioni.',
     },
     {
       q: 'I dati di mercato e i feed dei prezzi sono reali?',

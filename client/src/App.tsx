@@ -19,7 +19,7 @@ function MainApp() {
   const { user } = useAuth();
   const { notify } = useNotification();
 
-  const [activeView, setActiveView] = useState<'landing' | 'trading' | 'orders' | 'transactions' | 'admin'>('trading');
+  const [activeView, setActiveView] = useState<'landing' | 'trading' | 'orders' | 'transactions' | 'admin'>('landing');
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'register' }>({
     isOpen: false,
     mode: 'login',
@@ -31,16 +31,30 @@ function MainApp() {
   const prevPortfolioRef = useRef<PortfolioSummary | null>(null);
   const prevPositionsCountRef = useRef<number | null>(null);
 
-  // Automatically switch view if user logs in or out
+  // Automatically switch view if user logs in or out with strict role gatekeeping
   useEffect(() => {
     if (user) {
-      if (activeView === 'landing') {
-        setActiveView('trading');
+      if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        if (activeView === 'landing') {
+          setActiveView('admin');
+        }
+      } else {
+        // Standard Client is always restricted to client views (trading/orders/transactions)
+        if (activeView === 'landing' || activeView === 'admin') {
+          setActiveView('trading');
+        }
       }
     } else {
       setActiveView('landing');
     }
   }, [user]);
+
+  // Strict role security gate: prevent normal clients from ever viewing the admin console
+  useEffect(() => {
+    if (activeView === 'admin' && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+      setActiveView(user ? 'trading' : 'landing');
+    }
+  }, [activeView, user]);
 
   // Periodic polling with Real-Time Sensory Feedback (Toasts + Chimes)
   const refreshUserData = async () => {
@@ -51,7 +65,7 @@ function MainApp() {
         api.getPositions(),
       ]);
 
-      // Detect Live CRM Events on Client
+      // Detect Live Events on Client
       if (prevPortfolioRef.current) {
         const prevCash = prevPortfolioRef.current.cashBalance;
         const delta = port.cashBalance - prevCash;
@@ -59,14 +73,14 @@ function MainApp() {
         if (delta > 0 && pos.length === (prevPositionsCountRef.current || 0)) {
           notify(
             'funds',
-            'Accredito Fondi dal CRM',
-            `Ricevuto accredito di +$${delta.toLocaleString(undefined, { minimumFractionDigits: 2 })} di capitale demo dal gestore!`
+            'Accredito Fondi Istituzionali',
+            `Ricevuto accredito di +$${delta.toLocaleString(undefined, { minimumFractionDigits: 2 })} di capitale operativo dal Desk!`
           );
         } else if (delta < 0 && pos.length === (prevPositionsCountRef.current || 0)) {
           notify(
             'funds',
-            'Storno Fondi dal CRM',
-            `Rettifica amministrativa di -$${Math.abs(delta).toLocaleString(undefined, { minimumFractionDigits: 2 })} eseguita dal gestore.`
+            'Rettifica Fondi Desk',
+            `Rettifica amministrativa di -$${Math.abs(delta).toLocaleString(undefined, { minimumFractionDigits: 2 })} eseguita dal Risk Desk.`
           );
         }
       }
@@ -76,13 +90,13 @@ function MainApp() {
           const newest = pos[0];
           notify(
             newest?.side === 'LONG' ? 'trade_buy' : 'trade_sell',
-            'Nuova Operazione Aperta da CRM',
+            'Nuova Operazione a Mercato',
             `Il Desk ha aperto: ${newest?.side} ${newest?.quantity} ${newest?.assetSymbol} @ $${newest?.averageEntryPrice.toLocaleString()}`
           );
         } else if (pos.length < prevPositionsCountRef.current) {
           notify(
             'trade_close',
-            'Posizione Chiusa dal Gestore',
+            'Operazione Chiusa a Mercato',
             'Un\'operazione è stata liquidata a mercato e il profitto/perdita è stato accreditato sul tuo saldo.'
           );
         }
@@ -171,7 +185,6 @@ function MainApp() {
           onClose={() => setAuthModal({ isOpen: false, mode: 'login' })}
           onSuccess={() => {
             setAuthModal({ isOpen: false, mode: 'login' });
-            setActiveView('trading');
           }}
         />
       )}

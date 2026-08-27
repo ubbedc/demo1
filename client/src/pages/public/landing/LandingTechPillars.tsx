@@ -38,9 +38,9 @@ export const LandingTechPillars: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
             <Shield className="w-5 h-5" />
           </div>
-          <h3 className="font-bold text-white text-sm">Audit Trail & CRM 360°</h3>
+          <h3 className="font-bold text-white text-sm">Audit Trail & Sicurezza Fondi</h3>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Console amministrativa con log crittografici, allocazione fondi, apertura ordini e gestione rischio globale.
+            Infrastruttura con log crittografici immutabili, segregazione dei conti e gestione del rischio istituzionale.
           </p>
         </div>
 

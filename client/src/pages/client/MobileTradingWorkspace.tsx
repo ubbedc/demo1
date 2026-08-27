@@ -78,7 +78,7 @@ export const MobileTradingWorkspace: React.FC<MobileWorkspaceProps> = ({
                     <span className={`font-black text-sm block ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {isProfit ? '+' : ''}${pos.unrealizedPnL.toFixed(2)}
                     </span>
-                    <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider">GESTITA CRM</span>
+                    <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider">GESTIONE DESK</span>
                   </div>
                 </div>
               );

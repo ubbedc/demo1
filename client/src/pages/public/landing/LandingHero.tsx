@@ -77,7 +77,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                 onClick={() => onOpenAuth('login')}
                 className="px-7 py-4 bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-mono font-bold rounded-2xl border border-slate-700 transition-all cursor-pointer hover:border-cyan-500/40"
               >
-                Area Riservata (Client / Desk)
+                Area Riservata Clienti
               </button>
             </>
           )}

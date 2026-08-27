@@ -89,7 +89,7 @@ export const DesktopTradingWorkspace: React.FC<DesktopWorkspaceProps> = ({
           <div className="flex items-center gap-2 text-xs">
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">
               <Eye className="w-3.5 h-3.5" />
-              Conto Spettatore Live (Gestito da CRM)
+              Conto Operativo Live (Gestito dal Desk)
             </span>
           </div>
         </div>

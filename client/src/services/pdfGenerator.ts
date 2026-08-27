@@ -120,7 +120,7 @@ export function generateStatementPDF({
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
   doc.text('USD ($) - Dollaro USA', box2X + 32, y + 10);
-  doc.text('Managed Account (CRM Desk)', box2X + 32, y + 15);
+  doc.text('Managed Account (Risk Desk)', box2X + 32, y + 15);
   doc.setTextColor(16, 185, 129); // Green
   doc.text('Doppia Partita Contabile Attiva', box2X + 32, y + 20);
 

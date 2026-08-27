@@ -99,7 +99,7 @@ export const StatementDocumentPreview: React.FC<StatementDocumentPreviewProps> =
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400 print:text-slate-600">Modello Operativo:</span>
-              <span className="text-slate-300 print:text-slate-800">Managed Account (Desk CRM)</span>
+              <span className="text-slate-300 print:text-slate-800">Managed Account (Risk Desk)</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400 print:text-slate-600">Certificazione:</span>
@@ -145,7 +145,7 @@ export const StatementDocumentPreview: React.FC<StatementDocumentPreviewProps> =
           <div className="bg-slate-950 print:bg-slate-100 p-3.5 rounded-xl border border-slate-800 print:border-slate-300">
             <span className="text-slate-500 print:text-slate-600 text-[10px] block font-bold">OPERAZIONI TOTALI</span>
             <span className="text-lg font-black text-white print:text-black font-mono">{totalTrades}</span>
-            <span className="text-[10px] text-slate-500 print:text-slate-600 block mt-0.5">Eseguite dal Desk CRM</span>
+            <span className="text-[10px] text-slate-500 print:text-slate-600 block mt-0.5">Eseguite dal Risk Desk</span>
           </div>
         </div>
       </div>

@@ -92,7 +92,7 @@ export const DesktopBottomTabs: React.FC<DesktopBottomTabsProps> = ({
         <div className="overflow-x-auto">
           {positions.length === 0 ? (
             <div className="py-8 text-center text-slate-500">
-              Nessuna posizione aperta al momento. Le operazioni eseguite dal gestore CRM appariranno qui in tempo reale.
+              Nessuna posizione aperta al momento. Le operazioni eseguite dal Desk appariranno qui in tempo reale.
             </div>
           ) : (
             <table className="w-full text-left">
@@ -132,7 +132,7 @@ export const DesktopBottomTabs: React.FC<DesktopBottomTabsProps> = ({
                       </td>
                       <td className="py-2.5 px-3 text-right">
                         <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold">
-                          GESTITO DA CRM
+                          GESTITO DAL DESK
                         </span>
                       </td>
                     </tr>

@@ -73,29 +73,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ initialMode = 'login', onC
           </button>
         </div>
 
-        {/* Quick Credentials Box */}
-        <div className="bg-slate-950/80 p-3.5 border-b border-slate-800 text-xs font-mono">
-          <span className="text-slate-400 block mb-2 font-bold text-[11px]">⚡ Accesso Rapido Demo di Test:</span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('trader@apextrader.demo', 'Trader123!')}
-              className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-cyan-500/30 text-left transition-all cursor-pointer"
-            >
-              <span className="text-cyan-400 font-bold block text-[11px]">Trader Demo (Pre-finanziato)</span>
-              <span className="text-slate-500 text-[10px] block">trader@apextrader.demo</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@apextrader.demo', 'Admin123!')}
-              className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-amber-500/30 text-left transition-all cursor-pointer"
-            >
-              <span className="text-amber-400 font-bold block text-[11px]">Admin CRM</span>
-              <span className="text-slate-500 text-[10px] block">admin@apextrader.demo</span>
-            </button>
-          </div>
-        </div>
-
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 font-mono text-xs">
           {/* Mode Switcher */}

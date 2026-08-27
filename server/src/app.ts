@@ -29,14 +29,18 @@ const authLimiter = rateLimit({
 import { SettingsService } from './modules/admin/settings.service';
 
 // Public / Health Endpoints
-app.get('/api/health', (req: Request, res: Response) => {
+const healthHandler = (_req: Request, res: Response) => {
   res.json({
     success: true,
     status: 'ONLINE',
     system: 'ApexTrader Modular Monolith (Decoupled)',
     timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
+app.get('/api/v1/health', healthHandler);
 
 app.get('/api/v1/public/settings', (_req: Request, res: Response) => {
   res.json({

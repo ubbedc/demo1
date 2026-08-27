@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../../../services/api';
 import { Position, Order, Transaction } from '../../../types';
 import { formatCurrency, formatPrice, formatDateTime } from '../../../utils/formatters';
-import { Activity, History, Receipt, XCircle } from 'lucide-react';
+import { Activity, History, Receipt, XCircle, Edit3, Calendar, Check, X } from 'lucide-react';
 
 interface AdminHistoryTabsProps {
   userId: string;
@@ -21,6 +21,14 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'positions' | 'orders' | 'transactions'>('positions');
   const [closingId, setClosingId] = useState<string | null>(null);
+  
+  // Date Editing State
+  const [editingDate, setEditingDate] = useState<{
+    type: 'order' | 'transaction';
+    id: string;
+    date: string;
+  } | null>(null);
+  const [savingDate, setSavingDate] = useState(false);
 
   const handleClosePosition = async (positionId: string) => {
     if (!confirm('Sei sicuro di voler liquidare a mercato questa posizione per conto del cliente?')) return;
@@ -34,6 +42,25 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
       alert(err.message || 'Errore durante la chiusura.');
     } finally {
       setClosingId(null);
+    }
+  };
+
+  const handleSaveDate = async () => {
+    if (!editingDate || !editingDate.date) return;
+    setSavingDate(true);
+    try {
+      const formattedDate = new Date(editingDate.date).toISOString().replace('T', ' ').substring(0, 19);
+      if (editingDate.type === 'order') {
+        await api.updateOrderDate(editingDate.id, formattedDate);
+      } else {
+        await api.updateTransactionDate(editingDate.id, formattedDate);
+      }
+      setEditingDate(null);
+      onRefresh();
+    } catch (err: any) {
+      alert(err.message || 'Errore durante l\'aggiornamento della data.');
+    } finally {
+      setSavingDate(false);
     }
   };
 
@@ -154,7 +181,7 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-900 border-b border-slate-800 text-slate-400">
-                    <th className="py-2.5 px-3">Data</th>
+                    <th className="py-2.5 px-3">Data / Modifica</th>
                     <th className="py-2.5 px-3">Asset</th>
                     <th className="py-2.5 px-3">Lato</th>
                     <th className="py-2.5 px-3">Quantità</th>
@@ -166,7 +193,23 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
                   {orders.map((o) => (
                     <tr key={o.id} className="hover:bg-slate-800/40">
-                      <td className="py-2 px-3 text-slate-400">{formatDateTime(o.created_at)}</td>
+                      <td className="py-2 px-3 text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <span>{formatDateTime(o.created_at)}</span>
+                          <button
+                            type="button"
+                            title="Modifica Data Esecuzione Ordine"
+                            onClick={() => setEditingDate({
+                              type: 'order',
+                              id: o.id,
+                              date: o.created_at ? new Date(o.created_at).toISOString().slice(0, 16) : ''
+                            })}
+                            className="p-1 hover:bg-slate-800 text-slate-500 hover:text-amber-400 rounded transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </td>
                       <td className="py-2 px-3 font-bold text-white">{o.asset_symbol}</td>
                       <td className="py-2 px-3 font-bold">
                         <span className={o.side === 'BUY' ? 'text-emerald-400' : 'text-rose-400'}>{o.side}</span>
@@ -194,7 +237,7 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-900 border-b border-slate-800 text-slate-400">
-                    <th className="py-2.5 px-3">Data</th>
+                    <th className="py-2.5 px-3">Data / Modifica</th>
                     <th className="py-2.5 px-3">Causale</th>
                     <th className="py-2.5 px-3">Descrizione</th>
                     <th className="py-2.5 px-3 text-right">Importo ($)</th>
@@ -204,7 +247,23 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
                   {transactions.map((t) => (
                     <tr key={t.id} className="hover:bg-slate-800/40">
-                      <td className="py-2 px-3 text-slate-400">{formatDateTime(t.created_at)}</td>
+                      <td className="py-2 px-3 text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <span>{formatDateTime(t.created_at)}</span>
+                          <button
+                            type="button"
+                            title="Modifica Data Transazione Ledger"
+                            onClick={() => setEditingDate({
+                              type: 'transaction',
+                              id: t.id,
+                              date: t.created_at ? new Date(t.created_at).toISOString().slice(0, 16) : ''
+                            })}
+                            className="p-1 hover:bg-slate-800 text-slate-500 hover:text-amber-400 rounded transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </td>
                       <td className="py-2 px-3 font-bold text-white">{t.type}</td>
                       <td className="py-2 px-3 text-slate-400 truncate max-w-xs">{t.description}</td>
                       <td className={`py-2 px-3 text-right font-bold ${t.amount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -219,6 +278,61 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Date Edit Modal Dialog */}
+      {editingDate && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4 font-mono animate-sheet-up">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                  Modifica Data {editingDate.type === 'order' ? 'Ordine Eseguito' : 'Transazione Ledger'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingDate(null)}
+                className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <label className="text-slate-400 block font-bold">Nuova Data e Ora:</label>
+              <input
+                type="datetime-local"
+                value={editingDate.date}
+                onChange={(e) => setEditingDate({ ...editingDate, date: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
+              />
+              <span className="text-[10px] text-slate-500 block">
+                Il timestamp verrà aggiornato sul database e si rifletterà nell'estratto conto PDF.
+              </span>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setEditingDate(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition-all cursor-pointer text-xs"
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveDate}
+                disabled={savingDate || !editingDate.date}
+                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black transition-all cursor-pointer text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 disabled:opacity-50"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {savingDate ? 'Salvataggio...' : 'Salva Nuova Data'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -188,6 +188,7 @@ export class AdminService {
     quantity: number,
     takeProfitPrice?: number,
     stopLossPrice?: number,
+    customExecutionDate?: string,
     ipAddress = '127.0.0.1'
   ) {
     const account = db.prepare('SELECT id FROM accounts WHERE user_id = ?').get(targetUserId) as any;
@@ -200,6 +201,7 @@ export class AdminService {
       quantity,
       takeProfitPrice,
       stopLossPrice,
+      customExecutionDate,
     });
 
     eventBus.emit('admin.order_executed', {
@@ -210,10 +212,64 @@ export class AdminService {
       order: result,
       takeProfitPrice,
       stopLossPrice,
+      customExecutionDate,
       ipAddress,
     });
 
     return result;
+  }
+
+  public updateOrderDate(
+    adminId: string,
+    adminRole: string,
+    orderId: string,
+    newDate: string,
+    ipAddress = '127.0.0.1'
+  ) {
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId) as any;
+    if (!order) throw new Error('Ordine non trovato.');
+
+    const stateBefore = { created_at: order.created_at, executed_at: order.executed_at };
+
+    db.prepare('UPDATE orders SET created_at = ?, executed_at = ? WHERE id = ?').run(newDate, newDate, orderId);
+    db.prepare('UPDATE transactions SET created_at = ? WHERE reference_id = ?').run(newDate, orderId);
+
+    eventBus.emit('admin.order_date_updated', {
+      actorId: adminId,
+      actorRole: adminRole,
+      orderId,
+      stateBefore,
+      stateAfter: { created_at: newDate, executed_at: newDate },
+      ipAddress,
+    });
+
+    return { success: true, orderId, newDate };
+  }
+
+  public updateTransactionDate(
+    adminId: string,
+    adminRole: string,
+    transactionId: string,
+    newDate: string,
+    ipAddress = '127.0.0.1'
+  ) {
+    const tx = db.prepare('SELECT * FROM transactions WHERE id = ?').get(transactionId) as any;
+    if (!tx) throw new Error('Transazione non trovata.');
+
+    const stateBefore = { created_at: tx.created_at };
+
+    db.prepare('UPDATE transactions SET created_at = ? WHERE id = ?').run(newDate, transactionId);
+
+    eventBus.emit('admin.transaction_date_updated', {
+      actorId: adminId,
+      actorRole: adminRole,
+      transactionId,
+      stateBefore,
+      stateAfter: { created_at: newDate },
+      ipAddress,
+    });
+
+    return { success: true, transactionId, newDate };
   }
 
   public closePositionForUser(

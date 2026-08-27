@@ -112,7 +112,7 @@ router.patch('/users/:id/status', (req: AuthenticatedRequest, res: Response) => 
 router.post('/users/:id/orders', (req: AuthenticatedRequest, res: Response) => {
   try {
     const targetUserId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const { symbol, side, quantity, takeProfitPrice, stopLossPrice } = req.body;
+    const { symbol, side, quantity, takeProfitPrice, stopLossPrice, customExecutionDate, customDate } = req.body;
     const ip = req.ip || req.socket.remoteAddress || '127.0.0.1';
     const result = adminService.executeOrderForUser(
       req.user!.userId,
@@ -123,9 +123,48 @@ router.post('/users/:id/orders', (req: AuthenticatedRequest, res: Response) => {
       Number(quantity),
       takeProfitPrice ? Number(takeProfitPrice) : undefined,
       stopLossPrice ? Number(stopLossPrice) : undefined,
+      customExecutionDate || customDate,
       ip
     );
     res.status(201).json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: { message: err.message } });
+  }
+});
+
+router.put('/orders/:orderId/date', (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const orderId = Array.isArray(req.params.orderId) ? req.params.orderId[0] : req.params.orderId;
+    const { newDate } = req.body;
+    if (!newDate) throw new Error('Data non valida.');
+    const ip = req.ip || req.socket.remoteAddress || '127.0.0.1';
+    const result = adminService.updateOrderDate(
+      req.user!.userId,
+      req.user!.role,
+      orderId,
+      newDate,
+      ip
+    );
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: { message: err.message } });
+  }
+});
+
+router.put('/transactions/:transactionId/date', (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const transactionId = Array.isArray(req.params.transactionId) ? req.params.transactionId[0] : req.params.transactionId;
+    const { newDate } = req.body;
+    if (!newDate) throw new Error('Data non valida.');
+    const ip = req.ip || req.socket.remoteAddress || '127.0.0.1';
+    const result = adminService.updateTransactionDate(
+      req.user!.userId,
+      req.user!.role,
+      transactionId,
+      newDate,
+      ip
+    );
+    res.json({ success: true, data: result });
   } catch (err: any) {
     res.status(400).json({ success: false, error: { message: err.message } });
   }

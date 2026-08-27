@@ -10,11 +10,12 @@ export interface PlaceOrderDTO {
   quantity: number;
   takeProfitPrice?: number;
   stopLossPrice?: number;
+  customExecutionDate?: string;
 }
 
 export class TradingService {
   public executeMarketOrder(dto: PlaceOrderDTO) {
-    const { accountId, symbol, side, quantity, takeProfitPrice, stopLossPrice } = dto;
+    const { accountId, symbol, side, quantity, takeProfitPrice, stopLossPrice, customExecutionDate } = dto;
 
     if (!quantity || quantity <= 0) {
       throw new Error('La quantità dell\'ordine deve essere maggiore di zero.');
@@ -42,11 +43,18 @@ export class TradingService {
     let positionId = '';
 
     const runTx = db.transaction(() => {
-      // 1. Record Filled Order
-      db.prepare(`
-        INSERT INTO orders (id, account_id, asset_symbol, side, type, status, quantity, executed_price, notional_value)
-        VALUES (?, ?, ?, ?, 'MARKET', 'FILLED', ?, ?, ?)
-      `).run(orderId, accountId, symbol, side, quantity, execPrice, notionalValue);
+      // 1. Record Filled Order (with optional custom date)
+      if (customExecutionDate) {
+        db.prepare(`
+          INSERT INTO orders (id, account_id, asset_symbol, side, type, status, quantity, executed_price, notional_value, created_at, executed_at)
+          VALUES (?, ?, ?, ?, 'MARKET', 'FILLED', ?, ?, ?, ?, ?)
+        `).run(orderId, accountId, symbol, side, quantity, execPrice, notionalValue, customExecutionDate, customExecutionDate);
+      } else {
+        db.prepare(`
+          INSERT INTO orders (id, account_id, asset_symbol, side, type, status, quantity, executed_price, notional_value)
+          VALUES (?, ?, ?, ?, 'MARKET', 'FILLED', ?, ?, ?)
+        `).run(orderId, accountId, symbol, side, quantity, execPrice, notionalValue);
+      }
 
       // 2. Adjust Balance / Deduct collateral for BUY or SELL
       accountsService.deductFunds(
@@ -54,7 +62,8 @@ export class TradingService {
         notionalValue,
         'TRADE_EXECUTION',
         `Esecuzione Ordine ${side} ${quantity} ${symbol} @ $${execPrice}`,
-        orderId
+        orderId,
+        customExecutionDate
       );
 
       // 3. Update or Create Position
@@ -79,19 +88,36 @@ export class TradingService {
         `).run(newQty, newAvg, takeProfitPrice || null, stopLossPrice || null, existingPos.id);
       } else {
         positionId = uuidv4();
-        db.prepare(`
-          INSERT INTO positions (id, account_id, asset_symbol, side, quantity, average_entry_price, take_profit_price, stop_loss_price, status, realized_pnl)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', 0.0)
-        `).run(
-          positionId,
-          accountId,
-          symbol,
-          side === 'BUY' ? 'LONG' : 'SHORT',
-          quantity,
-          execPrice,
-          takeProfitPrice || null,
-          stopLossPrice || null
-        );
+        if (customExecutionDate) {
+          db.prepare(`
+            INSERT INTO positions (id, account_id, asset_symbol, side, quantity, average_entry_price, take_profit_price, stop_loss_price, status, realized_pnl, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', 0.0, ?)
+          `).run(
+            positionId,
+            accountId,
+            symbol,
+            side === 'BUY' ? 'LONG' : 'SHORT',
+            quantity,
+            execPrice,
+            takeProfitPrice || null,
+            stopLossPrice || null,
+            customExecutionDate
+          );
+        } else {
+          db.prepare(`
+            INSERT INTO positions (id, account_id, asset_symbol, side, quantity, average_entry_price, take_profit_price, stop_loss_price, status, realized_pnl)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', 0.0)
+          `).run(
+            positionId,
+            accountId,
+            symbol,
+            side === 'BUY' ? 'LONG' : 'SHORT',
+            quantity,
+            execPrice,
+            takeProfitPrice || null,
+            stopLossPrice || null
+          );
+        }
       }
     });
 

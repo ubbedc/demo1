@@ -159,11 +159,32 @@ class ApiService {
 
   public async executeOrderForUser(
     userId: string,
-    payload: { symbol: string; side: 'BUY' | 'SELL'; quantity: number; takeProfitPrice?: number; stopLossPrice?: number }
+    payload: { 
+      symbol: string; 
+      side: 'BUY' | 'SELL'; 
+      quantity: number; 
+      takeProfitPrice?: number; 
+      stopLossPrice?: number;
+      customExecutionDate?: string;
+    }
   ): Promise<any> {
     return this.request<any>(`/admin/users/${userId}/orders`, {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  }
+
+  public async updateOrderDate(orderId: string, newDate: string): Promise<any> {
+    return this.request<any>(`/admin/orders/${orderId}/date`, {
+      method: 'PUT',
+      body: JSON.stringify({ newDate }),
+    });
+  }
+
+  public async updateTransactionDate(transactionId: string, newDate: string): Promise<any> {
+    return this.request<any>(`/admin/transactions/${transactionId}/date`, {
+      method: 'PUT',
+      body: JSON.stringify({ newDate }),
     });
   }
 

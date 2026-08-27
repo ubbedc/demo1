@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../../../services/api';
 import { MarketQuote } from '../../../types';
 import { formatPrice, formatCurrency } from '../../../utils/formatters';
-import { LineChart, Sparkles } from 'lucide-react';
+import { LineChart, Sparkles, Calendar } from 'lucide-react';
 
 interface AdminTradeDeskProps {
   userId: string;
@@ -22,6 +22,7 @@ export const AdminTradeDesk: React.FC<AdminTradeDeskProps> = ({
   const [quantity, setQuantity] = useState('0.1');
   const [takeProfit, setTakeProfit] = useState('');
   const [stopLoss, setStopLoss] = useState('');
+  const [customDate, setCustomDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const currentQuote = quotes.find((q) => q.symbol === symbol);
@@ -39,10 +40,12 @@ export const AdminTradeDesk: React.FC<AdminTradeDeskProps> = ({
         quantity: qty,
         takeProfitPrice: takeProfit ? parseFloat(takeProfit) : undefined,
         stopLossPrice: stopLoss ? parseFloat(stopLoss) : undefined,
+        customExecutionDate: customDate ? new Date(customDate).toISOString().replace('T', ' ').substring(0, 19) : undefined,
       });
       alert(`Operazione ${side} ${qty} ${symbol} eseguita con successo per il cliente!`);
       setTakeProfit('');
       setStopLoss('');
+      setCustomDate('');
       onSuccess();
     } catch (err: any) {
       alert(err.message || 'Errore durante l\'esecuzione del trade per l\'utente.');
@@ -173,6 +176,36 @@ export const AdminTradeDesk: React.FC<AdminTradeDeskProps> = ({
             className="w-full bg-slate-900 border border-rose-500/30 rounded px-2.5 py-1.5 text-rose-300 font-bold placeholder:text-slate-600 focus:outline-none focus:border-rose-500"
           />
         </div>
+      </div>
+
+      {/* Optional Custom Execution Date Row */}
+      <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <label className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5" />
+            Data/Ora Esecuzione (Opzionale):
+          </label>
+          <input
+            type="datetime-local"
+            value={customDate}
+            onChange={(e) => setCustomDate(e.target.value)}
+            className="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-white text-xs font-mono focus:outline-none focus:border-amber-500"
+          />
+          {customDate && (
+            <button
+              type="button"
+              onClick={() => setCustomDate('')}
+              className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+            >
+              Reimposta su Adesso
+            </button>
+          )}
+        </div>
+        {!customDate && (
+          <span className="text-[10px] text-slate-500 font-mono">
+            ⚡ Default: Timestamp in tempo reale (Adesso)
+          </span>
+        )}
       </div>
 
       {/* Footer Info & Submit */}

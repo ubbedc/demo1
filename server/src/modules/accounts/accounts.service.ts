@@ -51,7 +51,8 @@ export class AccountsService {
     amount: number,
     type: 'WELCOME_BONUS' | 'ADMIN_ADJUSTMENT' | 'TRADE_EXECUTION' | 'POSITION_CLOSE' | 'RESET',
     description: string,
-    referenceId: string | null = null
+    referenceId: string | null = null,
+    customDate?: string
   ): AccountBalance {
     const current = this.getBalance(accountId);
     const newCash = current.cashBalance + amount;
@@ -65,10 +66,17 @@ export class AccountsService {
       `).run(newCash, accountId);
 
       // Create transaction log
-      db.prepare(`
-        INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(uuidv4(), accountId, type, amount, newCash, description, referenceId);
+      if (customDate) {
+        db.prepare(`
+          INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), accountId, type, amount, newCash, description, referenceId, customDate);
+      } else {
+        db.prepare(`
+          INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), accountId, type, amount, newCash, description, referenceId);
+      }
     });
 
     runTx();
@@ -80,7 +88,8 @@ export class AccountsService {
     amount: number,
     type: 'ADMIN_ADJUSTMENT' | 'TRADE_EXECUTION' | 'POSITION_CLOSE',
     description: string,
-    referenceId: string | null = null
+    referenceId: string | null = null,
+    customDate?: string
   ): AccountBalance {
     const current = this.getBalance(accountId);
     if (current.freeBalance < amount) {
@@ -96,10 +105,17 @@ export class AccountsService {
         WHERE account_id = ?
       `).run(newCash, accountId);
 
-      db.prepare(`
-        INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(uuidv4(), accountId, type, -amount, newCash, description, referenceId);
+      if (customDate) {
+        db.prepare(`
+          INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), accountId, type, -amount, newCash, description, referenceId, customDate);
+      } else {
+        db.prepare(`
+          INSERT INTO transactions (id, account_id, type, amount, balance_after, description, reference_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), accountId, type, -amount, newCash, description, referenceId);
+      }
     });
 
     runTx();

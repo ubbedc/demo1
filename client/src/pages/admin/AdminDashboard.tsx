@@ -123,71 +123,75 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3 Main CRM Navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
+      {/* 5 Main CRM Navigation Tabs (Clean horizontal scroll on mobile, full bar on desktop) */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto no-scrollbar scrollbar-none flex-nowrap -mx-3 px-3 sm:mx-0 sm:px-0">
         <button
           type="button"
           onClick={() => setActiveTab('users')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
             activeTab === 'users'
               ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <Users className="w-4 h-4" />
-          Anagrafica & Gestione Clienti
+          <span>Clienti</span>
+          <span className="hidden sm:inline">& Gestione</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('positions')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
             activeTab === 'positions'
               ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <Activity className="w-4 h-4" />
-          Desk Rischio & Posizioni Globali ({metrics?.totalPositions ?? 0})
+          <span>Posizioni</span>
+          <span className="text-[10px] opacity-80">({metrics?.totalPositions ?? 0})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('audit')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
             activeTab === 'audit'
               ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
-          Registro Audit Immutabile ({auditLogs.length})
+          <span>Audit</span>
+          <span className="hidden sm:inline">Immutabile</span>
+          <span className="text-[10px] opacity-80">({auditLogs.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('settings')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
             activeTab === 'settings'
               ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <Sliders className="w-4 h-4" />
-          Personalizzazione & CMS
+          <span>CMS & Temi</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('analytics')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
             activeTab === 'analytics'
               ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400'
               : 'bg-slate-900 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30'
           }`}
         >
           <BarChart3 className="w-4 h-4 text-emerald-400" />
-          Visite & Analytics Live
+          <span>Visite Live</span>
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>

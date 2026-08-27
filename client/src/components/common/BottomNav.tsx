@@ -111,62 +111,62 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     return (
       <nav 
         aria-label="Navigazione Desk Amministratore"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-2xl border-t border-slate-800/80 px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-10px_25px_rgba(0,0,0,0.5)] select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur-2xl border-t border-slate-800/90 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-1 shadow-[0_-12px_30px_rgba(0,0,0,0.7)] select-none"
       >
         {/* Terminale */}
         <button
           type="button"
           onClick={() => handleNavClick('trading')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all cursor-pointer active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
             activeView === 'trading'
-              ? 'text-cyan-400 font-bold scale-105'
+              ? 'text-cyan-400 bg-cyan-500/10 font-bold'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <LineChart className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] font-mono tracking-tight">Terminale</span>
+          <LineChart className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">Terminale</span>
         </button>
 
-        {/* CRM Clienti */}
+        {/* CRM Desk */}
         <button
           type="button"
           onClick={() => handleNavClick('admin')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all cursor-pointer active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
             activeView === 'admin'
-              ? 'text-amber-300 bg-amber-500/15 border border-amber-500/40 font-black scale-105 shadow-md shadow-amber-500/20'
+              ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40 font-black shadow-md shadow-amber-500/20'
               : 'text-amber-400/80 hover:text-amber-300'
           }`}
         >
-          <Users className="w-5 h-5 mb-0.5 text-amber-400" />
-          <span className="text-[10px] font-mono tracking-tight">Clienti CRM</span>
+          <Users className="w-5 h-5 mb-1 text-amber-400" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">CRM Desk</span>
         </button>
 
         {/* Ordini */}
         <button
           type="button"
           onClick={() => handleNavClick('orders')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all cursor-pointer active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
             activeView === 'orders'
-              ? 'text-cyan-400 font-bold scale-105'
+              ? 'text-cyan-400 bg-cyan-500/10 font-bold'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Clock className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] font-mono tracking-tight">Ordini</span>
+          <Clock className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">Ordini</span>
         </button>
 
-        {/* Ledger */}
+        {/* Ledger Audit */}
         <button
           type="button"
           onClick={() => handleNavClick('transactions')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all cursor-pointer active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
             activeView === 'transactions'
-              ? 'text-cyan-400 font-bold scale-105'
+              ? 'text-cyan-400 bg-cyan-500/10 font-bold'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Receipt className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] font-mono tracking-tight">Audit</span>
+          <Receipt className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">Audit</span>
         </button>
       </nav>
     );

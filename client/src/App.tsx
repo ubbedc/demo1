@@ -11,8 +11,10 @@ import { TradingTerminal } from './pages/client/TradingTerminal';
 import { OrdersPage } from './pages/client/OrdersPage';
 import { TransactionsPage } from './pages/client/TransactionsPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { HTBAcademyWorkspace } from './pages/academy/HTBAcademyWorkspace';
 import { PortfolioSummary, Position } from './types';
 import { api } from './services/api';
+import { useMarket } from './context/MarketContext';
 import { LineChart, Clock, Receipt } from 'lucide-react';
 
 import { trackPageView, trackAction } from './services/telemetry';
@@ -20,8 +22,9 @@ import { trackPageView, trackAction } from './services/telemetry';
 function MainApp() {
   const { user } = useAuth();
   const { notify } = useNotification();
+  const { setSelectedSymbol } = useMarket();
 
-  const [activeView, setActiveView] = useState<'landing' | 'trading' | 'orders' | 'transactions' | 'admin'>('landing');
+  const [activeView, setActiveView] = useState<'landing' | 'trading' | 'orders' | 'transactions' | 'admin' | 'academy'>('landing');
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'register' }>({
     isOpen: false,
     mode: 'login',
@@ -161,10 +164,25 @@ function MainApp() {
               trackAction('CTA_ENTER_PLATFORM');
               setActiveView('trading');
             }}
+            onNavigateToAcademy={() => {
+              trackAction('CTA_OPEN_ACADEMY');
+              setActiveView('academy');
+            }}
           />
         )}
 
-        {activeView !== 'landing' && activeView !== 'admin' && (
+        {/* Quant Academy Workspace */}
+        {activeView === 'academy' && (
+          <HTBAcademyWorkspace
+            onNavigateToTrading={(symbol) => {
+              if (symbol) setSelectedSymbol(symbol);
+              trackAction('ACADEMY_SPAWN_LAB', { symbol });
+              setActiveView('trading');
+            }}
+          />
+        )}
+
+        {activeView !== 'landing' && activeView !== 'admin' && activeView !== 'academy' && (
           <div className="space-y-4">
             {/* Client Views */}
             {activeView === 'trading' && (

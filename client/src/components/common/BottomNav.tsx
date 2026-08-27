@@ -10,7 +10,9 @@ import {
   Lock, 
   Activity, 
   Users, 
-  LogOut 
+  LogOut,
+  Zap,
+  GraduationCap 
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -35,7 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     setActiveView(viewName);
   };
 
-  // 1. PUBLIC GUEST MODE (Landing Page & Mercati)
+  // 1. PUBLIC GUEST MODE (Landing Page & Academy)
   if (!user) {
     return (
       <nav 
@@ -59,6 +61,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] font-mono tracking-tight leading-none">Home</span>
         </button>
 
+        {/* Quant Academy */}
+        <button
+          type="button"
+          onClick={() => handleNavClick('academy')}
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            activeView === 'academy'
+              ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 font-black shadow-md shadow-emerald-500/20'
+              : 'text-emerald-400/90 hover:text-emerald-300'
+          }`}
+        >
+          <Zap className="w-5 h-5 mb-1 text-emerald-400" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">Academy</span>
+        </button>
+
         {/* Live Markets */}
         <button
           type="button"
@@ -75,29 +91,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] font-mono tracking-tight leading-none">Mercati</span>
         </button>
 
-        {/* Register CTA Button */}
+        {/* Login / Registrati */}
         <button
           type="button"
           onClick={() => {
             triggerHaptic('medium');
             if (onOpenAuth) onOpenAuth('register');
           }}
-          className="flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-500/40 text-cyan-300 font-black transition-all cursor-pointer shadow-lg shadow-cyan-500/10 active:scale-95"
+          className="flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 font-black transition-all cursor-pointer shadow-lg shadow-cyan-500/10 active:scale-95"
         >
           <Sparkles className="w-5 h-5 mb-1 text-cyan-400" />
-          <span className="text-[10px] font-mono tracking-tight leading-none">Registrati</span>
-        </button>
-
-        {/* Login */}
-        <button
-          type="button"
-          onClick={() => {
-            triggerHaptic('light');
-            if (onOpenAuth) onOpenAuth('login');
-          }}
-          className="flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer text-slate-400 hover:text-slate-200 active:scale-95"
-        >
-          <Lock className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-mono tracking-tight leading-none">Accedi</span>
         </button>
       </nav>
@@ -130,13 +133,27 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           type="button"
           onClick={() => handleNavClick('admin')}
           className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
-            activeView === 'admin'
+            activeView.startsWith('admin')
               ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40 font-black shadow-md shadow-amber-500/20'
               : 'text-amber-400/80 hover:text-amber-300'
           }`}
         >
           <Users className="w-5 h-5 mb-1 text-amber-400" />
           <span className="text-[10px] font-mono tracking-tight leading-none">CRM Desk</span>
+        </button>
+
+        {/* Academy */}
+        <button
+          type="button"
+          onClick={() => handleNavClick('academy')}
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            activeView === 'academy'
+              ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 font-black shadow-md shadow-emerald-500/20'
+              : 'text-emerald-400/80 hover:text-emerald-300'
+          }`}
+        >
+          <Zap className="w-5 h-5 mb-1 text-emerald-400" />
+          <span className="text-[10px] font-mono tracking-tight leading-none">Academy</span>
         </button>
 
         {/* Ordini */}
@@ -151,20 +168,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         >
           <Clock className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-mono tracking-tight leading-none">Ordini</span>
-        </button>
-
-        {/* Ledger Audit */}
-        <button
-          type="button"
-          onClick={() => handleNavClick('transactions')}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
-            activeView === 'transactions'
-              ? 'text-cyan-400 bg-cyan-500/10 font-bold'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Receipt className="w-5 h-5 mb-1" />
-          <span className="text-[10px] font-mono tracking-tight leading-none">Audit</span>
         </button>
       </nav>
     );
@@ -195,6 +198,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <span className="text-[10px] font-mono tracking-tight leading-none">Terminale</span>
       </button>
 
+      {/* Academy HTB */}
+      <button
+        type="button"
+        onClick={() => handleNavClick('academy')}
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer active:scale-95 ${
+          activeView === 'academy'
+            ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 font-black shadow-md shadow-emerald-500/20'
+            : 'text-emerald-400/80 hover:text-emerald-300'
+        }`}
+      >
+        <Zap className="w-5 h-5 mb-1 text-emerald-400" />
+        <span className="text-[10px] font-mono tracking-tight leading-none">Academy</span>
+      </button>
+
       {/* Storico Ordini */}
       <button
         type="button"
@@ -221,20 +238,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       >
         <Receipt className="w-5 h-5 mb-1" />
         <span className="text-[10px] font-mono tracking-tight leading-none">Estratto</span>
-      </button>
-
-      {/* Logout */}
-      <button
-        type="button"
-        onClick={() => {
-          triggerHaptic('medium');
-          logout();
-          setActiveView('landing');
-        }}
-        className="flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer text-rose-400/80 hover:text-rose-300 active:scale-95"
-      >
-        <LogOut className="w-5 h-5 mb-1" />
-        <span className="text-[10px] font-mono tracking-tight leading-none">Esci</span>
       </button>
     </nav>
   );

@@ -124,6 +124,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Transazioni
               </button>
 
+              <button
+                onClick={() => setActiveView('academy')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  activeView === 'academy'
+                    ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'text-emerald-400 hover:text-emerald-300'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>⚡ Academy</span>
+              </button>
+
               {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
                 <button
                   onClick={() => setActiveView('admin')}
@@ -137,6 +149,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                   CRM Admin
                 </button>
               )}
+            </nav>
+          )}
+
+          {/* Logged Out Academy Link */}
+          {!user && (
+            <nav className="hidden md:flex items-center ml-4">
+              <button
+                onClick={() => setActiveView('academy')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                  activeView === 'academy'
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
+                    : 'text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>⚡ Quant Academy (A-Z)</span>
+              </button>
             </nav>
           )}
         </div>

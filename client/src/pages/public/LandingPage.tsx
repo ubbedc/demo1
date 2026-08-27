@@ -14,9 +14,10 @@ import { Sparkles, ArrowRight, Play } from 'lucide-react';
 interface LandingPageProps {
   onOpenAuth: (mode: 'login' | 'register') => void;
   onEnterPlatform: () => void;
+  onNavigateToAcademy?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPlatform }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPlatform, onNavigateToAcademy }) => {
   const { user } = useAuth();
   const { settings } = usePlatformSettings();
 
@@ -39,6 +40,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPla
 
       {/* 4. 3-Step Guided Journey */}
       {settings.show_journey_section && <LandingJourney />}
+
+      {/* 4.5 Quant Academy Promo Banner */}
+      {onNavigateToAcademy && (
+        <section className="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-teal-950/60 border border-emerald-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 font-mono">
+          <div className="space-y-2 max-w-xl text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold">
+              <span>⚡ QUANT & TRADING ACADEMY</span>
+              <span>•</span>
+              <span>12 MODULI DALLA A ALLA Z</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Impara a fare trading con la Masterclass Interattiva Gratuita
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300">
+              Formazione a nodi stile Hack The Box: scopri la matematica del rischio, esegui nei laboratori sandbox live e sblocca il Diploma Istituzionale.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onNavigateToAcademy}
+            className="px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer shrink-0 hover:scale-105"
+          >
+            <span>Inizia la Masterclass Gratuita</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </section>
+      )}
 
       {/* 5. Comparison Matrix */}
       {settings.show_comparison_section && <LandingComparison />}

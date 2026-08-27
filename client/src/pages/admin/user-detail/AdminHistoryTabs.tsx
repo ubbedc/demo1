@@ -12,6 +12,29 @@ interface AdminHistoryTabsProps {
   onRefresh: () => void;
 }
 
+function parseDateForInput(dateStr?: string): string {
+  if (!dateStr) {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+  try {
+    const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) {
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+}
+
 export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
   userId,
   positions,
@@ -49,12 +72,18 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
     if (!editingDate || !editingDate.date) return;
     setSavingDate(true);
     try {
-      const formattedDate = new Date(editingDate.date).toISOString().replace('T', ' ').substring(0, 19);
+      const normalized = editingDate.date.includes('T') ? editingDate.date : editingDate.date.replace(' ', 'T');
+      const d = new Date(normalized);
+      const formattedDate = isNaN(d.getTime())
+        ? new Date().toISOString().replace('T', ' ').substring(0, 19)
+        : d.toISOString().replace('T', ' ').substring(0, 19);
+
       if (editingDate.type === 'order') {
         await api.updateOrderDate(editingDate.id, formattedDate);
       } else {
         await api.updateTransactionDate(editingDate.id, formattedDate);
       }
+      alert('Data aggiornata con successo!');
       setEditingDate(null);
       onRefresh();
     } catch (err: any) {
@@ -202,7 +231,7 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
                             onClick={() => setEditingDate({
                               type: 'order',
                               id: o.id,
-                              date: o.created_at ? new Date(o.created_at).toISOString().slice(0, 16) : ''
+                              date: parseDateForInput(o.created_at)
                             })}
                             className="p-1 hover:bg-slate-800 text-slate-500 hover:text-amber-400 rounded transition-colors cursor-pointer"
                           >
@@ -256,7 +285,7 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
                             onClick={() => setEditingDate({
                               type: 'transaction',
                               id: t.id,
-                              date: t.created_at ? new Date(t.created_at).toISOString().slice(0, 16) : ''
+                              date: parseDateForInput(t.created_at)
                             })}
                             className="p-1 hover:bg-slate-800 text-slate-500 hover:text-amber-400 rounded transition-colors cursor-pointer"
                           >
@@ -284,52 +313,52 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
       {/* Date Edit Modal Dialog */}
       {editingDate && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4 font-mono animate-sheet-up">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5 font-mono animate-sheet-up">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-amber-400" />
-                <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                <Calendar className="w-5 h-5 text-amber-400" />
+                <h3 className="font-bold text-white text-sm uppercase tracking-wider">
                   Modifica Data {editingDate.type === 'order' ? 'Ordine Eseguito' : 'Transazione Ledger'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingDate(null)}
-                className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white cursor-pointer"
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-2 text-xs">
-              <label className="text-slate-400 block font-bold">Nuova Data e Ora:</label>
+              <label className="text-slate-300 block font-bold">Nuova Data e Ora:</label>
               <input
                 type="datetime-local"
                 value={editingDate.date}
                 onChange={(e) => setEditingDate({ ...editingDate, date: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
               />
-              <span className="text-[10px] text-slate-500 block">
-                Il timestamp verrà aggiornato sul database e si rifletterà nell'estratto conto PDF.
+              <span className="text-[11px] text-slate-400 block pt-1">
+                ℹ️ Il timestamp verrà registrato nel database e apparirà nell'estratto conto PDF.
               </span>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => setEditingDate(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition-all cursor-pointer text-xs"
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-all cursor-pointer text-xs"
               >
                 Annulla
               </button>
               <button
                 type="button"
                 onClick={handleSaveDate}
-                disabled={savingDate || !editingDate.date}
-                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black transition-all cursor-pointer text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                disabled={savingDate}
+                className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 rounded-xl font-black transition-all cursor-pointer text-xs flex items-center gap-2 shadow-lg shadow-amber-400/25"
               >
-                <Check className="w-3.5 h-3.5" />
-                {savingDate ? 'Salvataggio...' : 'Salva Nuova Data'}
+                <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                {savingDate ? 'Salvataggio in corso...' : 'Salva Nuova Data'}
               </button>
             </div>
           </div>

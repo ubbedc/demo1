@@ -67,11 +67,11 @@ export function seedDatabase() {
 
   // 2. Create Admin Account
   const adminId = uuidv4();
-  const adminPassHash = bcrypt.hashSync('Admin123!', 10);
+  const adminPassHash = bcrypt.hashSync('prova123', 10);
   db.prepare(`
     INSERT INTO users (id, email, password_hash, full_name, role, status)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(adminId, 'admin@apextrader.demo', adminPassHash, 'Chief Executive Admin', 'ADMIN', 'ACTIVE');
+  `).run(adminId, 'prova@gmail.com', adminPassHash, 'Chief Executive Admin', 'ADMIN', 'ACTIVE');
 
   // 3. Create Demo Trader Account
   const traderId = uuidv4();

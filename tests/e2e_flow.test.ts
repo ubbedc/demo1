@@ -42,8 +42,8 @@ test('E2E Flow: Full Managed Account Workflow (Client Live Viewer & Admin CRM Op
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: 'admin@apextrader.demo',
-      password: 'Admin123!',
+      email: 'prova@gmail.com',
+      password: 'prova123',
     }),
   });
   const adminLoginData = await adminLoginRes.json();

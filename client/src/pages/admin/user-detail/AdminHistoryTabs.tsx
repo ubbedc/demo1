@@ -355,9 +355,15 @@ export const AdminHistoryTabs: React.FC<AdminHistoryTabsProps> = ({
                 type="button"
                 onClick={handleSaveDate}
                 disabled={savingDate}
-                className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 rounded-xl font-black transition-all cursor-pointer text-xs flex items-center gap-2 shadow-lg shadow-amber-400/25"
+                style={{
+                  backgroundColor: '#f59e0b',
+                  color: '#000000',
+                  fontWeight: 900,
+                  boxShadow: '0 4px 14px 0 rgba(245, 158, 11, 0.45)',
+                }}
+                className="px-6 py-2.5 hover:brightness-110 active:scale-95 rounded-xl transition-all cursor-pointer text-xs flex items-center gap-2"
               >
-                <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                <Check className="w-4 h-4 text-black stroke-[3]" />
                 {savingDate ? 'Salvataggio in corso...' : 'Salva Nuova Data'}
               </button>
             </div>

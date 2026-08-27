@@ -11,7 +11,8 @@ import {
   Globe, 
   TrendingUp,
   Clock,
-  Radio
+  Radio,
+  Trash2
 } from 'lucide-react';
 import { formatDateTime } from '../../utils/formatters';
 
@@ -28,6 +29,18 @@ export const AdminAnalyticsPage: React.FC = () => {
       console.warn('Errore caricamento statistiche:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm('Sei sicuro di voler azzerare i contatori di visita e i dati di telemetria di test?')) {
+      return;
+    }
+    try {
+      await api.resetAdminAnalytics();
+      await fetchAnalytics();
+    } catch (err) {
+      alert('Errore durante l\'azzeramento dei dati');
     }
   };
 
@@ -48,7 +61,7 @@ export const AdminAnalyticsPage: React.FC = () => {
   }
 
   const {
-    activeVisitorsNow = 1,
+    activeVisitorsNow = 0,
     todayVisits = 0,
     todayUniqueVisitors = 0,
     uniqueVisitors7Days = 0,
@@ -64,16 +77,21 @@ export const AdminAnalyticsPage: React.FC = () => {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800 backdrop-blur-md">
         <div>
-          <h2 className="text-base font-black text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-emerald-400" />
-            Control Desk: Analytics & Visite Live
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-black text-white flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-400" />
+              Control Desk: Analytics & Visite Live
+            </h2>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/30">
+              Solo Clienti & Ospiti
+            </span>
+          </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Telemetria proprietaria in tempo reale — Monitoraggio visitatori, clic e conversioni.
+            Telemetria reale — Il traffico degli amministratori è escluso automaticamente per dati puri al 100%.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setAutoRefresh(!autoRefresh)}
@@ -84,16 +102,25 @@ export const AdminAnalyticsPage: React.FC = () => {
             }`}
           >
             <Radio className={`w-3.5 h-3.5 ${autoRefresh ? 'animate-pulse text-emerald-400' : ''}`} />
-            {autoRefresh ? 'Auto-Live Attivo (10s)' : 'Auto-Live In Pausa'}
+            {autoRefresh ? 'Auto-Live Attivo' : 'In Pausa'}
           </button>
 
           <button
             type="button"
             onClick={fetchAnalytics}
             className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all cursor-pointer"
-            title="Aggiorna Adesso"
+            title="Aggiorna Dati Adesso"
           >
             <RefreshCw className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl transition-all cursor-pointer"
+            title="Azzera Dati di Test"
+          >
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>

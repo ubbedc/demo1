@@ -43,4 +43,14 @@ router.get('/admin/analytics', authMiddleware, requireAdmin, (_req: Authenticate
   }
 });
 
+// Admin-Protected Analytics Reset Endpoint
+router.delete('/admin/analytics/reset', authMiddleware, requireAdmin, (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    analyticsService.resetAnalytics();
+    res.json({ success: true, message: 'Dati telemetria azzerati con successo' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: { message: err.message } });
+  }
+});
+
 export default router;

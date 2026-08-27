@@ -235,6 +235,12 @@ class ApiService {
   public async getAdminAnalytics(): Promise<any> {
     return this.request<any>('/admin/analytics');
   }
+
+  public async resetAdminAnalytics(): Promise<any> {
+    return this.request<any>('/admin/analytics/reset', {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const api = new ApiService();

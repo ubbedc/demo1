@@ -23,6 +23,11 @@ export class AnalyticsService {
       ipAddress = '127.0.0.1',
     } = dto;
 
+    // Strict Filter: Never record admin or CRM desk pages
+    if (pagePath.startsWith('/admin')) {
+      return;
+    }
+
     try {
       db.prepare(`
         INSERT INTO visitor_events (id, session_id, event_type, page_path, event_data, device_type, user_agent, ip_address)
@@ -42,12 +47,21 @@ export class AnalyticsService {
     }
   }
 
+  public resetAnalytics(): void {
+    try {
+      db.prepare('DELETE FROM visitor_events').run();
+    } catch (err: any) {
+      console.warn('[Analytics] Failed to reset events:', err.message);
+    }
+  }
+
   public getAnalyticsSummary() {
-    // 1. Live Active Visitors in the last 5 minutes
+    // 1. Live Active Visitors in the last 5 minutes (Guests & Clients only)
     const liveRes = db.prepare(`
       SELECT COUNT(DISTINCT session_id) as count
       FROM visitor_events
       WHERE created_at >= datetime('now', '-5 minutes')
+        AND page_path NOT LIKE '/admin%'
     `).get() as any;
     const activeVisitorsNow = liveRes?.count || 0;
 
@@ -58,6 +72,7 @@ export class AnalyticsService {
         COUNT(DISTINCT session_id) as unique_visitors
       FROM visitor_events
       WHERE date(created_at) = date('now')
+        AND page_path NOT LIKE '/admin%'
     `).get() as any;
 
     // 3. Unique Visitors Last 7 Days & 30 Days
@@ -65,12 +80,14 @@ export class AnalyticsService {
       SELECT COUNT(DISTINCT session_id) as count
       FROM visitor_events
       WHERE created_at >= datetime('now', '-7 days')
+        AND page_path NOT LIKE '/admin%'
     `).get() as any;
 
     const last30Res = db.prepare(`
       SELECT COUNT(DISTINCT session_id) as count
       FROM visitor_events
       WHERE created_at >= datetime('now', '-30 days')
+        AND page_path NOT LIKE '/admin%'
     `).get() as any;
 
     // 4. Device Breakdown (Last 30 Days)
@@ -78,6 +95,7 @@ export class AnalyticsService {
       SELECT device_type, COUNT(*) as count
       FROM visitor_events
       WHERE created_at >= datetime('now', '-30 days')
+        AND page_path NOT LIKE '/admin%'
       GROUP BY device_type
     `).all() as any[];
 
@@ -89,11 +107,12 @@ export class AnalyticsService {
     }
     const totalDevices = mobileCount + desktopCount || 1;
 
-    // 5. Top Visited Pages
+    // 5. Top Visited Pages (Public & Client Pages only)
     const topPages = db.prepare(`
       SELECT page_path, COUNT(*) as views
       FROM visitor_events
       WHERE event_type = 'PAGE_VIEW'
+        AND page_path NOT LIKE '/admin%'
       GROUP BY page_path
       ORDER BY views DESC
       LIMIT 10
@@ -104,6 +123,8 @@ export class AnalyticsService {
       SELECT event_type, COUNT(*) as count
       FROM visitor_events
       WHERE event_type != 'PAGE_VIEW'
+        AND event_type != 'LIVE_PULSE'
+        AND page_path NOT LIKE '/admin%'
       GROUP BY event_type
       ORDER BY count DESC
       LIMIT 10
@@ -113,12 +134,13 @@ export class AnalyticsService {
     const recentActivity = db.prepare(`
       SELECT id, session_id, event_type, page_path, event_data, device_type, created_at
       FROM visitor_events
+      WHERE page_path NOT LIKE '/admin%'
       ORDER BY created_at DESC
       LIMIT 30
     `).all();
 
     return {
-      activeVisitorsNow: Math.max(activeVisitorsNow, 1), // Always show at least 1 when admin is inspecting
+      activeVisitorsNow,
       todayVisits: todayRes?.total_events || 0,
       todayUniqueVisitors: todayRes?.unique_visitors || 0,
       uniqueVisitors7Days: last7Res?.count || 0,

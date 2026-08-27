@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, Download } from 'lucide-react';
 
 interface UsersFilterBarProps {
   search: string;
@@ -9,6 +9,7 @@ interface UsersFilterBarProps {
   balanceFilter: 'ALL' | 'ZERO' | 'POSITIVE';
   setBalanceFilter: (b: 'ALL' | 'ZERO' | 'POSITIVE') => void;
   onOpenCreate: () => void;
+  onExportCSV: () => void;
 }
 
 export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
@@ -19,6 +20,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
   balanceFilter,
   setBalanceFilter,
   onOpenCreate,
+  onExportCSV,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
@@ -79,15 +81,27 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Create User Button */}
-      <button
-        type="button"
-        onClick={onOpenCreate}
-        className="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
-      >
-        <UserPlus className="w-4 h-4" />
-        + Nuovo Cliente Demo
-      </button>
+      {/* Action Buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onExportCSV}
+          className="px-3.5 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+          title="Esporta Lista Clienti in CSV / Excel"
+        >
+          <Download className="w-4 h-4 text-emerald-400" />
+          <span className="hidden sm:inline">Esporta CSV</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenCreate}
+          className="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
+        >
+          <UserPlus className="w-4 h-4" />
+          + Nuovo Cliente Demo
+        </button>
+      </div>
     </div>
   );
 };

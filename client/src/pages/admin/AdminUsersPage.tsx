@@ -84,6 +84,35 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ onRefreshStats }
     }
   };
 
+  const handleExportCSV = () => {
+    if (!users || users.length === 0) {
+      alert('Nessun utente disponibile per l\'esportazione.');
+      return;
+    }
+
+    const headers = ['ID Utente', 'Nome Completo', 'Email', 'Numero Conto', 'Saldo Cassa ($)', 'Posizioni Aperte', 'Stato Account', 'Ruolo', 'Data Registrazione'];
+    const rows = filteredUsers.map((u) => [
+      u.id,
+      `"${(u.full_name || u.fullName || '').replace(/"/g, '""')}"`,
+      u.email,
+      u.account_number || u.accountNumber || '-',
+      Number(u.cash_balance || 0).toFixed(2),
+      u.open_positions_count || 0,
+      u.status || 'ACTIVE',
+      u.role || 'CLIENT',
+      new Date(u.created_at).toISOString(),
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Anagrafica_Clienti_ApexTrader_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredUsers = users.filter((u) => {
     if (balanceFilter === 'ZERO') return Number(u.cash_balance) === 0;
     if (balanceFilter === 'POSITIVE') return Number(u.cash_balance) > 0;
@@ -101,6 +130,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ onRefreshStats }
         balanceFilter={balanceFilter}
         setBalanceFilter={setBalanceFilter}
         onOpenCreate={() => setIsCreateOpen(true)}
+        onExportCSV={handleExportCSV}
       />
 
       {/* Users Data Grid Table */}

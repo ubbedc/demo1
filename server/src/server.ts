@@ -23,6 +23,23 @@ const server = app.listen(CONFIG.PORT, '0.0.0.0', () => {
   `);
 });
 
+// 4. Start 24/7 Keep-Alive Self-Pinger in Production
+if (CONFIG.NODE_ENV === 'production' || process.env.RENDER_EXTERNAL_URL) {
+  const targetUrl = process.env.RENDER_EXTERNAL_URL || 'https://apptest-oef2.onrender.com';
+  console.log(`📡 Keep-Alive Engine Active: Pinging ${targetUrl}/api/v1/health every 9 minutes`);
+  
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${targetUrl}/api/v1/health`);
+      if (res.ok) {
+        console.log(`[Keep-Alive] Heartbeat pulse sent (${new Date().toISOString()})`);
+      }
+    } catch (err: any) {
+      console.warn(`[Keep-Alive] Heartbeat pulse warning:`, err.message);
+    }
+  }, 9 * 60 * 1000);
+}
+
 process.on('SIGTERM', () => {
   marketService.stopTickLoop();
   server.close(() => {

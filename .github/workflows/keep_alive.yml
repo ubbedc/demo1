@@ -1,0 +1,23 @@
+name: Keep-Alive 24/7 Heartbeat
+
+on:
+  schedule:
+    # Runs every 10 minutes (cron syntax: minute hour day month day-of-week)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping:
+    name: Ping Production Endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Heartbeat Request
+        run: |
+          echo "Sending Keep-Alive heartbeat to Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://apptest-oef2.onrender.com/api/v1/health || true)
+          echo "Response Status Code: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "✅ Platform is active and healthy!"
+          else
+            echo "⚠️ Non-200 status or waking up: $STATUS"
+          fi

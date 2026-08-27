@@ -15,6 +15,8 @@ import { PortfolioSummary, Position } from './types';
 import { api } from './services/api';
 import { LineChart, Clock, Receipt } from 'lucide-react';
 
+import { trackPageView, trackAction } from './services/telemetry';
+
 function MainApp() {
   const { user } = useAuth();
   const { notify } = useNotification();
@@ -30,6 +32,11 @@ function MainApp() {
 
   const prevPortfolioRef = useRef<PortfolioSummary | null>(null);
   const prevPositionsCountRef = useRef<number | null>(null);
+
+  // Track page views automatically
+  useEffect(() => {
+    trackPageView(activeView === 'landing' ? '/' : '/' + activeView);
+  }, [activeView]);
 
   // Automatically switch view if user logs in or out with strict role gatekeeping
   useEffect(() => {
@@ -129,6 +136,11 @@ function MainApp() {
     }
   };
 
+  const handleOpenAuth = (mode: 'login' | 'register') => {
+    trackAction('AUTH_MODAL_OPEN', { mode });
+    setAuthModal({ isOpen: true, mode });
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
       {/* Top Header */}
@@ -137,15 +149,18 @@ function MainApp() {
         activeView={activeView}
         setActiveView={(v: any) => setActiveView(v)}
         onResetDemo={handleResetDemo}
-        onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })}
+        onOpenAuth={handleOpenAuth}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24 md:pb-6">
         {activeView === 'landing' && (
           <LandingPage
-            onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })}
-            onEnterPlatform={() => setActiveView('trading')}
+            onOpenAuth={handleOpenAuth}
+            onEnterPlatform={() => {
+              trackAction('CTA_ENTER_PLATFORM');
+              setActiveView('trading');
+            }}
           />
         )}
 

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { PortfolioSummary, Order, Transaction } from '../../types';
 import { generateStatementPDF } from '../../services/pdfGenerator';
 import { StatementDocumentPreview } from './statement/StatementDocumentPreview';
+import { trackAction } from '../../services/telemetry';
 import { 
   X, 
   Printer, 
@@ -59,9 +60,8 @@ export const StatementExportModal: React.FC<StatementModalProps> = ({
 
   // Generate deterministic audit verification code based on account & date
   const statementRef = `APX-STMT-${(displayUser?.accountNumber || 'DEMO').replace(/[^a-zA-Z0-9]/g, '')}-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-  const sha256Fingerprint = `${Math.abs(Math.sin((displayUser?.email || '').length + equity) * 1e16).toString(16).padEnd(32, 'a').slice(0, 32)}...${statementRef}`;
-
   const handleDownloadPDF = () => {
+    trackAction('PDF_DOWNLOAD', { account: displayUser?.accountNumber });
     generateStatementPDF({
       user: displayUser,
       portfolio,
@@ -71,10 +71,12 @@ export const StatementExportModal: React.FC<StatementModalProps> = ({
   };
 
   const handlePrint = () => {
+    trackAction('STATEMENT_PRINT');
     window.print();
   };
 
   const handleExportCSV = () => {
+    trackAction('CSV_EXPORT', { account: displayUser?.accountNumber });
     const headers = ['Data (UTC)', 'Causale / Tipo', 'Strumento', 'Direzione', 'Quantita', 'Prezzo ($)', 'Controvalore ($)', 'Stato / Note'];
     const rows = orders.map((o) => [
       new Date(o.created_at).toISOString(),

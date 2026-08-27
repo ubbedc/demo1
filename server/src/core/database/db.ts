@@ -122,6 +122,19 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- 10. Visitor Analytics & Telemetry Table
+    CREATE TABLE IF NOT EXISTS visitor_events (
+      id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      page_path TEXT NOT NULL,
+      event_data TEXT,
+      device_type TEXT NOT NULL DEFAULT 'DESKTOP',
+      user_agent TEXT,
+      ip_address TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Performance Indices
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
@@ -129,6 +142,8 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_orders_account ON orders(account_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_positions_account ON positions(account_id, status);
     CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_visitor_events_created ON visitor_events(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_visitor_events_session ON visitor_events(session_id);
   `);
 
   try {

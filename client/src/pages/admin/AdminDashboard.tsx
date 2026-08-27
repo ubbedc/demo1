@@ -4,6 +4,7 @@ import { AdminDashboardMetrics, AuditLog } from '../../types';
 import { AdminUsersPage } from './AdminUsersPage';
 import { AdminGlobalPositionsPage } from './AdminGlobalPositionsPage';
 import { AdminSettingsPage } from './AdminSettingsPage';
+import { AdminAnalyticsPage } from './AdminAnalyticsPage';
 import { 
   Users, 
   DollarSign, 
@@ -14,13 +15,14 @@ import {
   ShieldAlert, 
   Globe, 
   TrendingUp,
-  Sliders
+  Sliders,
+  BarChart3
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'positions' | 'audit' | 'settings'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'positions' | 'audit' | 'settings' | 'analytics'>('users');
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
@@ -174,6 +176,23 @@ export const AdminDashboard: React.FC = () => {
           <Sliders className="w-4 h-4" />
           Personalizzazione & CMS
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('analytics')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'analytics'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400'
+              : 'bg-slate-900 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-emerald-400" />
+          Visite & Analytics Live
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </button>
       </div>
 
       {/* Tab Contents */}
@@ -187,6 +206,10 @@ export const AdminDashboard: React.FC = () => {
 
       {activeTab === 'settings' && (
         <AdminSettingsPage />
+      )}
+
+      {activeTab === 'analytics' && (
+        <AdminAnalyticsPage />
       )}
 
       {activeTab === 'audit' && (

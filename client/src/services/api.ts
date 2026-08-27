@@ -231,6 +231,10 @@ class ApiService {
       body: JSON.stringify(payload),
     });
   }
+
+  public async getAdminAnalytics(): Promise<any> {
+    return this.request<any>('/admin/analytics');
+  }
 }
 
 export const api = new ApiService();

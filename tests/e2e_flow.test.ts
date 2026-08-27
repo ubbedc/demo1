@@ -1,7 +1,32 @@
-import test from 'node:test';
+import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import app from '../server/src/app';
+import { seedDatabase } from '../server/src/core/database/seed';
+import { marketService } from '../server/src/modules/market-data/simulatedMarketService';
+import http from 'http';
 
-const BASE_URL = 'http://localhost:4000/api/v1';
+let server: http.Server;
+const TEST_PORT = 4000;
+const BASE_URL = `http://localhost:${TEST_PORT}/api/v1`;
+
+before(async () => {
+  seedDatabase();
+  marketService.startTickLoop(100);
+  await new Promise<void>((resolve) => {
+    server = app.listen(TEST_PORT, () => resolve());
+  });
+});
+
+after(async () => {
+  marketService.stopTickLoop();
+  if (server) {
+    if (typeof (server as any).closeAllConnections === 'function') {
+      (server as any).closeAllConnections();
+    }
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+  setTimeout(() => process.exit(0), 50);
+});
 
 test('E2E Flow: Health Check', async () => {
   const res = await fetch('http://localhost:4000/api/health');

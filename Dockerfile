@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy dependency manifests
 COPY package*.json ./
 
-# Install all dependencies including build tools
-RUN npm install
+# Install all dependencies with fast flags
+RUN npm install --no-audit --no-fund
 
 # Copy source code and build React & TypeScript
 COPY . .

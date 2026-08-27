@@ -90,7 +90,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
           title="Esporta Lista Clienti in CSV / Excel"
         >
           <Download className="w-4 h-4 text-emerald-400" />
-          <span>Esporta CSV</span>
+          <span>Esporta Excel / CSV</span>
         </button>
 
         <button

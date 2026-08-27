@@ -23,7 +23,7 @@ export const AdminAnalyticsPage: React.FC = () => {
   const fetchAnalytics = async () => {
     try {
       const res = await api.getAdminAnalytics();
-      setData(res.data);
+      setData(res);
     } catch (err) {
       console.warn('Errore caricamento statistiche:', err);
     } finally {

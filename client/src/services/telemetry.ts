@@ -50,3 +50,10 @@ export function trackAction(eventType: string, eventData?: Record<string, any>) 
     }).catch(() => {});
   } catch (_) {}
 }
+
+// Active session pulse every 30 seconds to keep live visitor radar accurate
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    trackAction('LIVE_PULSE');
+  }, 30000);
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ApexTrader" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>ApexTrader — Institutional Simulated Trading Platform & Quant Academy</title>
+    <meta name="description" content="Simulatore professionale di trading finanziario e masterclass didattica gamificata ad alte prestazioni con 12 laboratori interattivi e certificazione." />
+    
+    <!-- OpenGraph Social Sharing Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ApexTrader — Quant Trading Academy & Simulatore Istituzionale" />
+    <meta property="og:description" content="Impara la microstruttura dei mercati, la gestione del rischio asimmetrico e testa le tue strategie sul terminale demo con $10,000 virtuali." />
+    <meta property="og:site_name" content="ApexTrader" />
+    <meta property="og:locale" content="it_IT" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ApexTrader — Quant Trading Academy" />
+    <meta name="twitter:description" content="12 moduli formativi avanzati con laboratori interattivi e certificazione accademica ufficiale per trader quantitativi." />
+
+    <!-- Schema.org Educational Course & Platform Structured Data (Google Quality Score Enhancement) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Course",
+          "name": "Apex Quant Trading Masterclass",
+          "description": "Percorso formativo istituzionale in 12 moduli con simulatori interattivi su microstruttura, order book, leva finanziaria e gestione del rischio statistico.",
+          "provider": {
+            "@type": "Organization",
+            "name": "Apex Quantitative Research Division",
+            "sameAs": "https://apextrader.demo"
+          },
+          "educationalCredentialAwarded": "Institutional Quant Master Certificate",
+          "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "Online",
+            "courseWorkload": "PT10H"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "ApexTrader Simulator",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Google Fonts for institutional high-grade typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-black">
+    <div id="root"></div>
+    <script type="module" src="/client/src/main.tsx"></script>
+  </body>
+</html>

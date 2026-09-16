@@ -135,8 +135,8 @@ function MainApp() {
         }
       }
     } else {
-      // Guest users can browse landing or academy without being kicked out
-      if (activeView !== 'academy' && activeView !== 'landing') {
+      // Guest users can browse landing, academy, or Google Ads LP without being kicked out
+      if (activeView !== 'academy' && activeView !== 'landing' && activeView !== 'lp') {
         handleNavigate('landing');
       }
     }

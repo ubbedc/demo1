@@ -646,6 +646,7 @@ export const GoogleAdsLandingPage: React.FC<GoogleAdsLandingPageProps> = ({
       {/* Tabbed Legal Disclaimer Modal */}
       {legalModalTab && (
         <LegalPolicyModal
+          isOpen={true}
           initialTab={legalModalTab}
           onClose={() => setLegalModalTab(null)}
         />

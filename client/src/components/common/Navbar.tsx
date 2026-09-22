@@ -152,33 +152,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </nav>
           )}
 
-          {/* Logged Out Academy Link & Google Ads LP Switcher */}
-          {!user && (
-            <nav className="hidden md:flex items-center ml-4 gap-2">
-              <button
-                onClick={() => setActiveView('academy')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
-                  activeView === 'academy'
-                    ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20'
-                    : 'text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>⚡ Quant Academy (A-Z)</span>
-              </button>
 
-              <button
-                onClick={() => setActiveView('lp')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
-                  activeView === 'lp'
-                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/20'
-                    : 'text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30'
-                }`}
-              >
-                <span>🎯 Landing Google Ads (/lp)</span>
-              </button>
-            </nav>
-          )}
+
         </div>
 
         {/* Right Section: Saldo & Profilo */}

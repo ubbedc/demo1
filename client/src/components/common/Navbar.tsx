@@ -150,6 +150,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
             </nav>
+          ) : (
+            <nav className="hidden md:flex items-center ml-4 gap-2">
+              <button
+                onClick={() => setActiveView(activeView === 'academy' ? 'landing' : 'academy')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
+                  activeView === 'academy'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>⚡ Quant Academy</span>
+              </button>
+            </nav>
           )}
 
 

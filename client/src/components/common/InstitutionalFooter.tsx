@@ -115,22 +115,6 @@ export const InstitutionalFooter: React.FC<InstitutionalFooterProps> = ({ classN
             </a>
           </div>
         </div>
-
-        {/* Google Ads Landing Pages Quick Switcher */}
-        <div className="pt-2 border-t border-slate-900/80 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500 font-mono">
-          <span className="text-slate-400 font-bold">🚀 Anteprima Landing Page Google Ads:</span>
-          <div className="flex flex-wrap items-center gap-2 text-cyan-400">
-            <a href="/lp" className="hover:underline hover:text-white">Landing Principale (/lp)</a>
-            <span>•</span>
-            <a href="/lp?topic=leverage" className="hover:underline hover:text-white">Leva & Liquidazione</a>
-            <span>•</span>
-            <a href="/lp?topic=risk" className="hover:underline hover:text-white">Rischio 1%</a>
-            <span>•</span>
-            <a href="/lp?topic=spread" className="hover:underline hover:text-white">Spread & Book</a>
-            <span>•</span>
-            <a href="/lp?topic=pips" className="hover:underline hover:text-white">Valore Pip</a>
-          </div>
-        </div>
       </footer>
 
       <LegalPolicyModal

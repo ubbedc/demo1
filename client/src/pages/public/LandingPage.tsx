@@ -43,9 +43,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPla
 
       {/* 4.5 Quant Academy Promo Banner */}
       {onNavigateToAcademy && (
-        <section className="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-teal-950/60 border border-emerald-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 font-mono">
-          <div className="space-y-2 max-w-xl text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold">
+        <section className="card-academy-banner rounded-3xl p-6 sm:p-10 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 font-mono">
+          <div className="space-y-3 max-w-xl text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-sm">
               <span>⚡ QUANT & TRADING ACADEMY</span>
               <span>•</span>
               <span>12 MODULI DALLA A ALLA Z</span>
@@ -53,7 +53,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPla
             <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Impara a fare trading con la Masterclass Interattiva Gratuita
             </h3>
-            <p className="text-xs sm:text-sm text-slate-300">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               Formazione a nodi stile Hack The Box: scopri la matematica del rischio, esegui nei laboratori sandbox live e sblocca il Diploma Istituzionale.
             </p>
           </div>
@@ -61,10 +61,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth, onEnterPla
           <button
             type="button"
             onClick={onNavigateToAcademy}
-            className="px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer shrink-0 hover:scale-105"
+            className="btn-academy-cta px-7 py-4 text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2.5 cursor-pointer shrink-0"
           >
             <span>Inizia la Masterclass Gratuita</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 stroke-[3]" />
           </button>
         </section>
       )}

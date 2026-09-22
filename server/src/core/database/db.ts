@@ -135,6 +135,23 @@ export function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- 11. Marketing Leads & CRM Table
+    CREATE TABLE IF NOT EXISTS leads (
+      id TEXT PRIMARY KEY,
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      experience_level TEXT DEFAULT 'BEGINNER',
+      source TEXT DEFAULT 'google_ads_multistep_lp',
+      module_id TEXT,
+      module_title TEXT,
+      status TEXT NOT NULL DEFAULT 'NEW' CHECK(status IN ('NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST')),
+      notes TEXT,
+      ip_address TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Performance Indices
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
@@ -144,6 +161,9 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_visitor_events_created ON visitor_events(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_visitor_events_session ON visitor_events(session_id);
+    CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+    CREATE INDEX IF NOT EXISTS idx_leads_created ON leads(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
   `);
 
   try {

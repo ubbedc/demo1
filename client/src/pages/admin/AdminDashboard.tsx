@@ -5,6 +5,7 @@ import { AdminUsersPage } from './AdminUsersPage';
 import { AdminGlobalPositionsPage } from './AdminGlobalPositionsPage';
 import { AdminSettingsPage } from './AdminSettingsPage';
 import { AdminAnalyticsPage } from './AdminAnalyticsPage';
+import { AdminLeadsPage } from './AdminLeadsPage';
 import { 
   Users, 
   DollarSign, 
@@ -16,13 +17,14 @@ import {
   Globe, 
   TrendingUp,
   Sliders,
-  BarChart3
+  BarChart3,
+  Target
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'positions' | 'audit' | 'settings' | 'analytics'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'positions' | 'audit' | 'settings' | 'analytics' | 'leads'>('users');
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
@@ -197,11 +199,31 @@ export const AdminDashboard: React.FC = () => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('leads')}
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
+            activeTab === 'leads'
+              ? 'bg-gradient-to-r from-amber-500 to-orange-400 text-slate-950 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400'
+              : 'bg-slate-900 text-amber-300 hover:text-white border border-amber-500/30'
+          }`}
+        >
+          <Target className="w-4 h-4 text-amber-400" />
+          <span>Leads Acquisiti</span>
+          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black">
+            CRO
+          </span>
+        </button>
       </div>
 
       {/* Tab Contents */}
       {activeTab === 'users' && (
         <AdminUsersPage onRefreshStats={fetchStats} />
+      )}
+
+      {activeTab === 'leads' && (
+        <AdminLeadsPage />
       )}
 
       {activeTab === 'positions' && (

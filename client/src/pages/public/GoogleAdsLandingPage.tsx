@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { HTB_ACADEMY_MODULES, AcademyModule } from '../../constants/htbAcademyCurriculum';
 import { AcademySimulators } from '../academy/components/AcademySimulators';
 import { generateModuleHandbookPdf } from '../../services/academyPdfGenerator';
+import { api } from '../../services/api';
 import {
   captureCampaignAttribution,
   trackLandingPageView,
   trackLeadGenerated,
+  trackLeadPartial,
   trackDemoAccountPrompt,
 } from '../../services/marketingTracker';
 import { triggerHaptic } from '../../utils/haptics';
@@ -18,8 +20,16 @@ import {
   Award,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Mail,
   User,
+  Phone,
+  Lock,
+  Compass,
+  TrendingUp,
+  BrainCircuit,
+  Users,
+  Check,
 } from 'lucide-react';
 
 interface GoogleAdsLandingPageProps {
@@ -75,8 +85,18 @@ export const GoogleAdsLandingPage: React.FC<GoogleAdsLandingPageProps> = ({
   };
 
   const [activeModule, setActiveModule] = useState<AcademyModule>(() => resolveTargetModule(initialTopic));
+  
+  // Multi-Step Lead Capture Form State (Metodo 4)
+  const [formStep, setFormStep] = useState<1 | 2 | 3>(1);
+  const [experienceLevel, setExperienceLevel] = useState<'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null>(() => {
+    return (localStorage.getItem('apex_lead_level') as any) || null;
+  });
   const [studentName, setStudentName] = useState<string>(() => localStorage.getItem('apex_lead_name') || '');
   const [studentEmail, setStudentEmail] = useState<string>(() => localStorage.getItem('apex_lead_email') || '');
+  const [studentPhone, setStudentPhone] = useState<string>(() => localStorage.getItem('apex_lead_phone') || '');
+  const [phonePrefix, setPhonePrefix] = useState<string>('+39');
+  const [formError, setFormError] = useState<string | null>(null);
+
   const [isPdfDownloading, setIsPdfDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState<'disclaimer' | 'terms' | 'privacy' | 'methodology' | null>(null);
@@ -138,35 +158,107 @@ export const GoogleAdsLandingPage: React.FC<GoogleAdsLandingPageProps> = ({
 
   const copy = getDynamicHeadline();
 
-  const handleDownloadPdf = (e: React.FormEvent) => {
+  const handleSelectLevel = (level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') => {
+    triggerHaptic('light');
+    setExperienceLevel(level);
+    localStorage.setItem('apex_lead_level', level);
+    setFormError(null);
+    setFormStep(2);
+  };
+
+  const handleStep2Next = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentEmail.trim()) return;
+    const name = studentName.trim();
+    const email = studentEmail.trim();
+
+    if (!name) {
+      setFormError('Inserisci il tuo nome per personalizzare la dispensa.');
+      triggerHaptic('warning');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setFormError('Inserisci un indirizzo email valido.');
+      triggerHaptic('warning');
+      return;
+    }
+
+    setFormError(null);
+    localStorage.setItem('apex_lead_name', name);
+    localStorage.setItem('apex_lead_email', email);
+
+    // Track partial lead in case of drop-off at phone step
+    trackLeadPartial({
+      email,
+      name,
+      experienceLevel: experienceLevel || 'BEGINNER',
+      moduleId: activeModule.id,
+    });
+
+    // Instantly persist partial lead in SQLite database
+    api.submitLead({
+      fullName: name,
+      email,
+      experienceLevel: experienceLevel || 'BEGINNER',
+      source: 'google_ads_multistep_lp_step2',
+      moduleId: activeModule.id,
+      moduleTitle: activeModule.title,
+    }).catch(() => {});
+
+    triggerHaptic('medium');
+    setFormStep(3);
+  };
+
+  const handleFinalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPhone = studentPhone.trim().replace(/\s+/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 6) {
+      setFormError('Inserisci un numero di cellulare/WhatsApp valido per la ricezione istantanea.');
+      triggerHaptic('warning');
+      return;
+    }
+
+    setFormError(null);
+    const fullPhone = `${phonePrefix} ${studentPhone.trim()}`;
+    localStorage.setItem('apex_lead_phone', fullPhone);
 
     try {
       triggerHaptic('success');
       setIsPdfDownloading(true);
 
-      const name = studentName.trim() || 'Studente Quant';
+      const name = studentName.trim() || 'Operatore Quant';
       const email = studentEmail.trim();
-
-      // Persist in localStorage
-      localStorage.setItem('apex_lead_name', name);
-      localStorage.setItem('apex_lead_email', email);
 
       // Track high-value lead macro-conversion for Google Ads
       trackLeadGenerated({
         email,
         name,
+        phone: fullPhone,
+        experienceLevel: experienceLevel || 'BEGINNER',
         moduleId: activeModule.id,
         moduleTitle: activeModule.title,
-        source: 'google_ads_dedicated_lp',
+        source: 'google_ads_multistep_lp',
       });
+
+      // Instantly persist full qualified lead with phone in SQLite database
+      api.submitLead({
+        fullName: name,
+        email,
+        phone: fullPhone,
+        experienceLevel: experienceLevel || 'BEGINNER',
+        source: 'google_ads_multistep_lp_step3',
+        moduleId: activeModule.id,
+        moduleTitle: activeModule.title,
+      }).catch((err) => console.warn('[CRM] Lead persistence error:', err));
 
       // Generate vector PDF
       generateModuleHandbookPdf(activeModule, name);
       setDownloadSuccess(true);
     } catch (err) {
       console.error(err);
+      setFormError('Errore nella generazione del documento. Riprova tra poco.');
     } finally {
       setIsPdfDownloading(false);
     }
@@ -380,88 +472,346 @@ export const GoogleAdsLandingPage: React.FC<GoogleAdsLandingPageProps> = ({
         {/* 3. DUAL HIGH-CONVERTING CONVERSION SECTION */}
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-          {/* Card A: Lead Magnet (Download Official PDF Handbook) */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950 border border-cyan-500/40 shadow-2xl space-y-5 relative overflow-hidden">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0">
-                <FileDown className="w-6 h-6" />
+          {/* Card A: Multi-Step Lead Magnet Engine (Metodo 4 CRO) */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950 border border-cyan-500/40 shadow-2xl space-y-5 relative overflow-hidden flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0">
+                    <FileDown className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-cyan-400 font-black uppercase tracking-wider font-mono block">
+                      METODO 4 • SISTEMA AD ALTA CONVERSIONE
+                    </span>
+                    <h3 className="text-lg sm:text-xl font-black text-white">
+                      Sblocca il Dossier Didattico Ufficiale
+                    </h3>
+                  </div>
+                </div>
+
+                {!downloadSuccess && (
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-mono font-bold">
+                    <span>Fase {formStep} di 3</span>
+                  </div>
+                )}
               </div>
-              <div>
-                <span className="text-[10px] text-cyan-400 font-black uppercase tracking-wider font-mono block">
-                  ACCESSO IMMEDIATO AL DOSSIER
-                </span>
-                <h3 className="text-lg sm:text-xl font-black text-white">
-                  Scarica la Dispensa Formativa PDF
-                </h3>
-              </div>
+
+              {/* Progress Bar & Indicators */}
+              {!downloadSuccess && (
+                <div className="space-y-2 font-mono">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span className={formStep >= 1 ? 'text-cyan-400 font-bold' : ''}>1. Profilo</span>
+                    <span className={formStep >= 2 ? 'text-cyan-400 font-bold' : ''}>2. Dati</span>
+                    <span className={formStep >= 3 ? 'text-cyan-400 font-bold' : ''}>3. Ricezione</span>
+                    <span className="text-cyan-300 font-bold">
+                      {formStep === 1 ? '33%' : formStep === 2 ? '66%' : '100%'}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-950 border border-slate-800 overflow-hidden p-0.5">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 shadow-sm shadow-cyan-500/50"
+                      style={{
+                        width: formStep === 1 ? '33%' : formStep === 2 ? '66%' : '100%',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Form Validation Error Banner */}
+              {formError && (
+                <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-mono animate-in fade-in flex items-center justify-between">
+                  <span>⚠️ {formError}</span>
+                  <button
+                    type="button"
+                    onClick={() => setFormError(null)}
+                    className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* =================================================================== */}
+              {/* SUCCESS VIEW: Document Downloaded */}
+              {/* =================================================================== */}
+              {downloadSuccess ? (
+                <div className="p-5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs space-y-3 animate-in fade-in">
+                  <div className="flex items-center gap-2.5 font-bold text-sm">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                    <span>Dossier PDF Generato con Successo!</span>
+                  </div>
+                  <p className="text-[12px] text-slate-300 leading-relaxed font-mono">
+                    Il file vettoriale è stato inviato al tuo browser. Ora puoi testare le formule matematiche dal vivo operando sul terminale demo sandbox con <strong>$10,000 virtuali</strong>.
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1 font-mono text-[11px] text-slate-400">
+                    <div>👤 Intestatario: <strong className="text-white">{studentName || 'Operatore Quant'}</strong></div>
+                    <div>✉️ Email: <strong className="text-white">{studentEmail}</strong></div>
+                    <div>📱 Recapito: <strong className="text-emerald-400">{studentPhone || 'Confermato'}</strong></div>
+                    <div>🎯 Livello: <strong className="text-cyan-400">{experienceLevel || 'Personalizzato'}</strong></div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onNavigateToTrading('BTC/USD')}
+                    className="mt-2 w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs font-mono flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 hover:scale-102 transition-all"
+                  >
+                    <Play className="w-4 h-4 fill-slate-950" />
+                    <span>AVVIA TERMINALE DEMO SANDBOX ($10,000)</span>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* =================================================================== */}
+                  {/* STEP 1: Micro-Commitment (Select Experience Level) */}
+                  {/* =================================================================== */}
+                  {formStep === 1 && (
+                    <div className="space-y-3 animate-in fade-in duration-300 font-mono">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white block">
+                          Qual è il tuo livello attuale nei mercati?
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Seleziona un'opzione per calibrare le formule didattiche della dispensa:
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        {[
+                          {
+                            id: 'BEGINNER' as const,
+                            title: 'Principiante',
+                            desc: 'Parto da zero, voglio comprendere il rischio senza perdere capitale.',
+                            icon: Compass,
+                            badge: 'Basso Rischio',
+                          },
+                          {
+                            id: 'INTERMEDIATE' as const,
+                            title: 'Intermedio',
+                            desc: 'Ho già operato, cerco regole quantitative di size e margin call.',
+                            icon: TrendingUp,
+                            badge: 'Position Sizing',
+                          },
+                          {
+                            id: 'ADVANCED' as const,
+                            title: 'Avanzato / Quant',
+                            desc: 'Uso strategie complesse, voglio testare modelli ed Expected Value.',
+                            icon: BrainCircuit,
+                            badge: 'Formule Desk',
+                          },
+                        ].map((level) => {
+                          const isSelected = experienceLevel === level.id;
+                          const IconComp = level.icon;
+                          return (
+                            <button
+                              key={level.id}
+                              type="button"
+                              onClick={() => handleSelectLevel(level.id)}
+                              className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${
+                                isSelected
+                                  ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-md shadow-cyan-500/10'
+                                  : 'bg-slate-950/80 border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900 text-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                                    isSelected
+                                      ? 'bg-cyan-500 text-slate-950 border-cyan-400'
+                                      : 'bg-slate-900 text-cyan-400 border-slate-700 group-hover:border-cyan-500/50'
+                                  }`}
+                                >
+                                  <IconComp className="w-4 h-4" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <div className="text-xs font-bold text-white flex items-center gap-2">
+                                    <span>{level.title}</span>
+                                    <span className="text-[10px] px-2 py-0.2 rounded bg-slate-800 text-cyan-400 border border-slate-700">
+                                      {level.badge}
+                                    </span>
+                                  </div>
+                                  <p className="text-[10px] text-slate-400 line-clamp-1">
+                                    {level.desc}
+                                  </p>
+                                </div>
+                              </div>
+                              <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all shrink-0" />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>⚡ 1 click per avanzare (zero tastiera)</span>
+                        <span className="text-cyan-400/80">Gratuito al 100%</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* =================================================================== */}
+                  {/* STEP 2: Name & Email Capture */}
+                  {/* =================================================================== */}
+                  {formStep === 2 && (
+                    <form onSubmit={handleStep2Next} className="space-y-3 animate-in fade-in duration-300 font-mono">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white block">
+                          A chi e dove inviamo la guida metodologica?
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Intesteremo la dispensa ufficiale di <strong>{activeModule.title}</strong> con i tuoi dati:
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1 font-bold">
+                          Il tuo Nome (per intestazione documento):
+                        </label>
+                        <div className="relative">
+                          <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            required
+                            value={studentName}
+                            onChange={(e) => setStudentName(e.target.value)}
+                            placeholder="Nome e Cognome..."
+                            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1 font-bold">
+                          La tua Email di Studio:
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="email"
+                            required
+                            value={studentEmail}
+                            onChange={(e) => setStudentEmail(e.target.value)}
+                            placeholder="nome@esempio.com..."
+                            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setFormStep(1);
+                          }}
+                          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>Indietro</span>
+                        </button>
+
+                        <button
+                          type="submit"
+                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-black text-xs transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer hover:scale-102"
+                        >
+                          <span>CONTINUA: PREPARA IL DOSSIER</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* =================================================================== */}
+                  {/* STEP 3: Phone / WhatsApp Capture (Reason-Why + Direct Delivery) */}
+                  {/* =================================================================== */}
+                  {formStep === 3 && (
+                    <form onSubmit={handleFinalSubmit} className="space-y-3 animate-in fade-in duration-300 font-mono">
+                      <div className="p-3 rounded-xl bg-gradient-to-r from-cyan-950/60 to-emerald-950/60 border border-cyan-500/40 text-xs space-y-1">
+                        <div className="flex items-center gap-2 text-cyan-300 font-bold">
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span>Dossier e Formule pronti per il download!</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300">
+                          Inserisci il tuo recapito per ricevere il link istantaneo sul telefono e il codice di sblocco della Sandbox con <strong>$10.000 virtuali</strong>:
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1 font-bold">
+                          Numero WhatsApp / Cellulare:
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={phonePrefix}
+                            onChange={(e) => setPhonePrefix(e.target.value)}
+                            className="w-24 px-2 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 shrink-0 font-bold"
+                          >
+                            <option value="+39">🇮🇹 +39</option>
+                            <option value="+41">🇨🇭 +41</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+49">🇩🇪 +49</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+1">🇺🇸 +1</option>
+                          </select>
+
+                          <div className="relative flex-1">
+                            <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="tel"
+                              required
+                              value={studentPhone}
+                              onChange={(e) => setStudentPhone(e.target.value)}
+                              placeholder="340 123 4567"
+                              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 font-bold"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setFormStep(2);
+                          }}
+                          className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>Indietro</span>
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isPdfDownloading}
+                          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-slate-950 font-black text-xs transition-all shadow-xl shadow-cyan-500/25 flex items-center justify-center gap-2 cursor-pointer hover:scale-102 disabled:opacity-50"
+                        >
+                          <FileDown className="w-4 h-4" />
+                          <span>
+                            {isPdfDownloading ? 'Generazione in corso...' : '⚡ SBLOCCA DISPENSA PDF & ACCEDI ALLA SANDBOX'}
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-mono text-center pt-1">
+                        <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>Zero chiamate commerciali aggressive. Solo consegna materiale e accesso didattico.</span>
+                      </div>
+                    </form>
+                  )}
+                </>
+              )}
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Ricevi la guida metodologica di <strong>{activeModule.title}</strong> in formato vettoriale PDF ad alta risoluzione: formule matematiche, schemi grafici e casi studio reali.
-            </p>
-
-            {downloadSuccess ? (
-              <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs space-y-2 animate-in fade-in">
-                <div className="flex items-center gap-2 font-bold text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  <span>Dispensa PDF Generata con Successo!</span>
-                </div>
-                <p className="text-[11px] text-slate-300">
-                  Il file è stato scaricato sul tuo dispositivo. Ora puoi mettere in pratica i concetti operando sul terminale demo sandbox.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onNavigateToTrading('BTC/USD')}
-                  className="mt-2 w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs font-mono flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110"
-                >
-                  <Play className="w-3.5 h-3.5 fill-slate-950" />
-                  <span>Apri Terminale Demo Didattico</span>
-                </button>
+            {/* Social Proof Footer Badge */}
+            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Oltre 1.420 studenti hanno sbloccato il dossier questo mese</span>
               </div>
-            ) : (
-              <form onSubmit={handleDownloadPdf} className="space-y-3 font-mono">
-                <div>
-                  <label className="text-[11px] text-slate-400 block mb-1 font-bold">Il tuo Nome (per intestazione documento):</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
-                      placeholder="Nome e Cognome..."
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-slate-400 block mb-1 font-bold">La tua Email di Studio:</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="email"
-                      required
-                      value={studentEmail}
-                      onChange={(e) => setStudentEmail(e.target.value)}
-                      placeholder="nome@esempio.com..."
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isPdfDownloading}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-black text-xs transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer hover:scale-102"
-                >
-                  <FileDown className="w-4 h-4" />
-                  <span>{isPdfDownloading ? 'Generazione PDF...' : 'SCARICA LA DISPENSA IN PDF (GRATIS)'}</span>
-                </button>
-                <span className="text-[10px] text-slate-500 text-center block">
-                  🔒 Nessun dato ceduto a terzi. Solo materiale didattico ed educativo.
-                </span>
-              </form>
-            )}
+              <span className="text-emerald-400 font-bold">100% Gratuito</span>
+            </div>
           </div>
 
           {/* Card B: Sandbox Demo Activation */}

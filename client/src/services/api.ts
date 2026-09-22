@@ -7,7 +7,9 @@ import {
   Transaction, 
   AdminDashboardMetrics, 
   AuditLog,
-  PlatformSettings 
+  PlatformSettings,
+  LeadRecord,
+  LeadMetrics
 } from '../types';
 
 const BASE_URL = '/api/v1';
@@ -47,13 +49,32 @@ class ApiService {
       headers,
     });
 
-    const data = await response.json();
+    // Safely parse JSON: guard against empty bodies and non-JSON content types
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    let data: any = null;
 
-    if (!response.ok || data.success === false) {
+    if (isJson) {
+      const text = await response.text();
+      if (text && text.trim().length > 0) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Risposta del server non valida (JSON malformato). Status: ${response.status}`);
+        }
+      }
+    }
+
+    if (!response.ok) {
+      const message = data?.error?.message || `Errore server: ${response.status} ${response.statusText}`;
+      throw new Error(message);
+    }
+
+    if (data?.success === false) {
       throw new Error(data.error?.message || 'Si è verificato un errore nella richiesta.');
     }
 
-    return data.data as T;
+    return (data?.data ?? data) as T;
   }
 
   // --- Auth API ---
@@ -244,6 +265,56 @@ class ApiService {
 
   public async resetAdminAnalytics(): Promise<any> {
     return this.request<any>('/admin/analytics/reset', {
+      method: 'DELETE',
+    });
+  }
+
+  // --- Public Leads API ---
+  public async submitLead(payload: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    experienceLevel?: string;
+    source?: string;
+    moduleId?: string;
+    moduleTitle?: string;
+  }): Promise<{ id: string; status: string }> {
+    const res = await fetch('/api/v1/public/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.error?.message || 'Errore nel salvataggio del contatto.');
+    }
+    return json.data;
+  }
+
+  // --- Admin Leads CRM API ---
+  public async getAdminLeads(params?: { search?: string; status?: string; limit?: number; offset?: number }): Promise<{
+    leads: LeadRecord[];
+    total: number;
+    metrics: LeadMetrics;
+  }> {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.status) query.set('status', params.status);
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.offset) query.set('offset', String(params.offset));
+
+    return this.request<{ leads: LeadRecord[]; total: number; metrics: LeadMetrics }>(`/admin/leads?${query.toString()}`);
+  }
+
+  public async updateAdminLead(leadId: string, payload: { status?: string; notes?: string }): Promise<LeadRecord> {
+    return this.request<LeadRecord>(`/admin/leads/${leadId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  public async deleteAdminLead(leadId: string): Promise<{ deleted: boolean }> {
+    return this.request<{ deleted: boolean }>(`/admin/leads/${leadId}`, {
       method: 'DELETE',
     });
   }

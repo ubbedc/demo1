@@ -121,3 +121,28 @@ export interface PlatformSettings {
   google_tag_id?: string;
 }
 
+export interface LeadRecord {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  experience_level: string;
+  source: string;
+  module_id: string | null;
+  module_title: string | null;
+  status: 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'CONVERTED' | 'LOST';
+  notes: string | null;
+  ip_address: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeadMetrics {
+  totalLeads: number;
+  newLeads: number;
+  contactedLeads: number;
+  convertedLeads: number;
+  phoneCapturedCount: number;
+  phoneCaptureRate: number;
+}
+

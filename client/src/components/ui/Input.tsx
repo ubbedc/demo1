@@ -50,7 +50,7 @@ export const Input: React.FC<InputProps> = ({
         <input
           id={generatedId}
           disabled={disabled}
-          className={`w-full py-2.5 px-3 bg-transparent text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none min-h-[44px] ${
+          className={`w-full py-2.5 px-3 bg-slate-950 text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none min-h-[44px] appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] [&:-webkit-autofill]:bg-slate-950 [&:-webkit-autofill]:[-webkit-box-shadow:0_0_0_1000px_#020617_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:#ffffff] ${
             prefixAdornment ? 'pl-0' : ''
           } ${suffixAdornment ? 'pr-0' : ''} ${className}`}
           {...rest}

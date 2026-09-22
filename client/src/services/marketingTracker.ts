@@ -55,6 +55,8 @@ function sendTrackingEvent(eventName: string, eventParams: Record<string, any> =
 export function trackLeadGenerated(data: {
   email: string;
   name?: string;
+  phone?: string;
+  experienceLevel?: string;
   moduleId?: string;
   moduleTitle?: string;
   source?: string;
@@ -65,7 +67,26 @@ export function trackLeadGenerated(data: {
     lead_source: data.source || 'academy_pdf_handbook',
     module_id: data.moduleId,
     module_title: data.moduleTitle,
+    has_phone: Boolean(data.phone),
+    phone_prefix: data.phone ? data.phone.slice(0, 4) : undefined,
+    experience_level: data.experienceLevel || 'NOT_SPECIFIED',
     // Google Ads enhanced conversion hashed identifier can be passed here
+  });
+}
+
+/**
+ * Tracks early stage lead capture (Step 2 of Multi-Step form) to prevent data loss.
+ */
+export function trackLeadPartial(data: {
+  email: string;
+  name?: string;
+  experienceLevel?: string;
+  moduleId?: string;
+}) {
+  sendTrackingEvent('lead_partial_captured', {
+    event_category: 'Lead Magnet Step 2',
+    event_label: data.moduleId || 'general',
+    experience_level: data.experienceLevel || 'NOT_SPECIFIED',
   });
 }
 

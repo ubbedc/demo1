@@ -58,6 +58,7 @@ app.get('/api/v1/markets/quotes', (req: Request, res: Response) => {
 });
 
 import analyticsRoutes from './modules/analytics/analytics.routes';
+import leadsRoutes from './modules/leads/leads.routes';
 
 // Mounted Modular Routers
 app.use('/api/v1/auth', authLimiter, authRoutes);
@@ -65,6 +66,7 @@ app.use('/api/v1/client', clientRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1', analyticsRoutes);
+app.use('/api/v1', leadsRoutes);
 
 // Serve compiled React Frontend (Single-Port Production Deployment)
 const distPath = path.resolve(process.cwd(), 'dist');

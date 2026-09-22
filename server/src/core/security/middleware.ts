@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, TokenPayload } from './jwt';
+import { v4 as uuidv4 } from 'uuid';
 import db from '../database/db';
 
 export interface AuthenticatedRequest extends Request {
@@ -42,7 +43,21 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
     let accountId = decoded.accountId;
     if (!accountId) {
       const account = db.prepare('SELECT id FROM accounts WHERE user_id = ?').get(user.id) as any;
-      if (account) accountId = account.id;
+      if (account) {
+        accountId = account.id;
+      } else {
+        // Auto-provision a trading account for users who don't have one yet
+        const newAccountId = uuidv4();
+        const accNumber = 'APX-' + Math.floor(100000 + Math.random() * 900000);
+        const provisionTx = db.transaction(() => {
+          db.prepare(`INSERT INTO accounts (id, user_id, account_number, currency, status) VALUES (?, ?, ?, 'USD', 'ACTIVE')`)
+            .run(newAccountId, user.id, accNumber);
+          db.prepare(`INSERT INTO balances (id, account_id, cash_balance, reserved_balance) VALUES (?, ?, 0.0, 0.0)`)
+            .run(uuidv4(), newAccountId);
+        });
+        provisionTx();
+        accountId = newAccountId;
+      }
     }
 
     req.user = {

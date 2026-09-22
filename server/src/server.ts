@@ -1,7 +1,10 @@
 import app from './app';
-import { CONFIG } from './config';
+import { CONFIG, validateConfig } from './config';
 import { seedDatabase } from './core/database/seed';
 import { marketService } from './modules/market-data/simulatedMarketService';
+
+// 0. Validate critical environment variables before anything starts
+validateConfig();
 
 // 1. Initialize & Seed Database
 seedDatabase();
@@ -24,10 +27,12 @@ const server = app.listen(CONFIG.PORT, '0.0.0.0', () => {
 });
 
 // 4. Start 24/7 Keep-Alive Self-Pinger in Production
-if (CONFIG.NODE_ENV === 'production' || process.env.RENDER_EXTERNAL_URL) {
-  const targetUrl = process.env.RENDER_EXTERNAL_URL || 'https://apptest-oef2.onrender.com';
+if (CONFIG.NODE_ENV === 'production') {
+  const targetUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : 'https://capitalinvest-ltd.com';
   console.log(`📡 Keep-Alive Engine Active: Pinging ${targetUrl}/api/v1/health every 9 minutes`);
-  
+
   setInterval(async () => {
     try {
       const res = await fetch(`${targetUrl}/api/v1/health`);

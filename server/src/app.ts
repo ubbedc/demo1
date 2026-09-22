@@ -3,6 +3,7 @@ import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { CONFIG } from './config';
 import authRoutes from './modules/auth/auth.routes';
 import clientRoutes from './modules/trading/client.routes';
 import adminRoutes from './modules/admin/admin.routes';
@@ -12,13 +13,26 @@ const app = express();
 
 // Security Middlewares: Headers, CORS, Payload Limit
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: CONFIG.CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 
-// Anti-Brute-Force Rate Limiter for Authentication
+// Global API Rate Limiter — protects all /api routes from abuse
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: CONFIG.NODE_ENV === 'test' ? 50000 : 200,
+  message: {
+    success: false,
+    error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Troppe richieste. Riprova tra qualche minuto.' },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', globalLimiter);
+
+// Anti-Brute-Force Rate Limiter for Authentication (stricter)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'test' ? 5000 : 60,
+  max: CONFIG.NODE_ENV === 'test' ? 5000 : 20,
   message: {
     success: false,
     error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Troppe richieste di autenticazione. Riprova tra pochi minuti.' },

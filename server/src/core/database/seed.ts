@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import db, { initDatabase } from './db';
+import { CONFIG } from '../../config';
 
 export function seedDatabase() {
   initDatabase();
@@ -67,7 +68,7 @@ export function seedDatabase() {
 
   // 2. Create Admin Account
   const adminId = uuidv4();
-  const adminPassHash = bcrypt.hashSync('prova123', 10);
+  const adminPassHash = bcrypt.hashSync(CONFIG.ADMIN_PASSWORD, 10);
   db.prepare(`
     INSERT INTO users (id, email, password_hash, full_name, role, status)
     VALUES (?, ?, ?, ?, ?, ?)

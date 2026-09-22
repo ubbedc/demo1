@@ -88,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Desktop Nav switcher */}
-          {user && (
+          {user ? (
             <nav className="hidden md:flex items-center ml-6 gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 text-xs font-mono">
               <button
                 onClick={() => setActiveView('trading')}

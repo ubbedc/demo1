@@ -280,7 +280,7 @@ export const TradeActionTicket: React.FC<TradeActionTicketProps> = ({
           <Input
             label={`Quantità (${quote.symbol.split('/')[0]})`}
             type="number"
-            step={quote.assetClass === 'CRYPTO' ? '0.001' : quote.assetClass === 'FOREX' ? '100' : '1'}
+            step="any"
             min="0.0001"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}

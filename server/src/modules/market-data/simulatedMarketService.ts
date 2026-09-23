@@ -3,6 +3,7 @@ import db from '../../core/database/db';
 
 export class SimulatedMarketService implements IMarketDataProvider {
   private quotes: Map<string, MarketQuote> = new Map();
+  private openPrices: Map<string, number> = new Map(); // reference price for change24h
   private timer: NodeJS.Timeout | null = null;
 
   constructor() {
@@ -30,6 +31,12 @@ export class SimulatedMarketService implements IMarketDataProvider {
         });
       }
 
+      // Generate a realistic open price: ±2% from base (centered, unbiased)
+      const openBias = (Math.random() - 0.5) * 0.04; // -2% to +2%
+      const openPrice = Number((base * (1 + openBias)).toFixed(a.asset_class === 'FOREX' ? 4 : 2));
+      const initialChange = Number(((base - openPrice) / openPrice * 100).toFixed(2));
+      this.openPrices.set(a.symbol, openPrice);
+
       this.quotes.set(a.symbol, {
         symbol: a.symbol,
         name: a.name,
@@ -39,7 +46,7 @@ export class SimulatedMarketService implements IMarketDataProvider {
         ask: Number((base + spread / 2).toFixed(a.asset_class === 'FOREX' ? 4 : 2)),
         high24h: Number((base * 1.035).toFixed(a.asset_class === 'FOREX' ? 4 : 2)),
         low24h: Number((base * 0.965).toFixed(a.asset_class === 'FOREX' ? 4 : 2)),
-        change24h: Number(((Math.random() * 4) - 1.5).toFixed(2)),
+        change24h: initialChange,
         volume24h: Math.floor(100000 + Math.random() * 5000000),
         timestamp: now,
         history,
@@ -110,6 +117,12 @@ export class SimulatedMarketService implements IMarketDataProvider {
         q.high24h = Math.max(q.high24h, q.last);
         q.low24h = Math.min(q.low24h, q.last);
         q.timestamp = now;
+
+        // Recalculate change24h dynamically from stored open price
+        const openP = this.openPrices.get(symbol);
+        if (openP && openP > 0) {
+          q.change24h = Number(((q.last - openP) / openP * 100).toFixed(2));
+        }
 
         // Keep last 100 history points
         q.history.push({ time: now, price: q.last });
